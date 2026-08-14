@@ -1,63 +1,88 @@
 const userService = require('../services/user');
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
     try {
         const { username, password } = req.body;
         const userToken = await userService.login(username, password);
         res.json({ token: userToken });
     } catch (error) {
-        res.status(401).send();
+        next(error);
     }
 }
 
-const getUser = async(req, res) => {
+const getUser = async(req, res, next) => {
   try {
     const users = await userService.getUser();
     res.json(users);
   } catch (error) {
-    res.status(500).send();
+    next(error)
   }
 };
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
     try {
         const newUser = await userService.createUser(req.body);
         res.status(201).json(newUser);
     } catch (error) {
-        res.status(400).send();
+        next(error)
     }
 };
 
-const updateUser = async (req, res) => {
+const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
     const updatedUser = await userService.updateUser(id, req.body);
     res.json(updatedUser);
   } catch (error) {
-    res.status(400).send();
+    next(error)
   }
 };
 
-const deleteUser = async (req, res) => {
+const deleteUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    await userService.deleteUser(id);
+    const result = await userService.deleteUser(id);
+    
     res.json({ message: `User with ID: ${id} deleted` });
   } catch (error) {
-    res.status(400).send();
+    next(error)
   }
 };
 
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         const resetUserPassword = await userService.resetPassword(email, password);
         res.json(resetUserPassword);
     } catch (error) {
-        res.status(400).send();
+        next(error)
     }
 };
+
+//Favorites
+const createProductFavorite = async(req, res, next) => {
+  try{
+    const idProduct = req.params.idProd;
+    const idUser = req.user.id
+    
+    const newFav = await  userService.createProductFavorite(idProduct, idUser);
+    res.json(newFav)
+  }catch(error){
+    next(error)
+  }
+}
+
+const getProductFavorite = async (req, res, next) => {
+  try{
+    const idUser = req.user.id
+    const allUsrFav = await userService.getProductFavorite(idUser);
+    res.json(allUsrFav)
+  }catch(error){
+    next(error)
+  }
+}
+
 
 module.exports = {
     login,
@@ -65,5 +90,7 @@ module.exports = {
     createUser,
     updateUser,
     deleteUser,
-    resetPassword
+    resetPassword,
+    createProductFavorite,
+    getProductFavorite
 }

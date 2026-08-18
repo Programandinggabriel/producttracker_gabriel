@@ -13,8 +13,8 @@ const LOGGABLE_STATUS_CODES = new Set([
 
 const errorHandler = (err, req, res, next) => {
     if(LOGGABLE_STATUS_CODES.has(err.statusCode || 500)){
-    logger.error(err.message, {
-        name: err.name,
+        logger.error(err.message, {
+            name: err.name,
             data: err.data,
             stack: err.stack,
 

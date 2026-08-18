@@ -1,12 +1,41 @@
-const { ThrowError } = require("../errors/AppError");
 const dbProvider = require("../models/provider");
 const dbProduct = require('../models/product');
 const dbCategory = require('../models/category');
-const { cacheProductsByCategory, getCacheProductsByCategory, validateCacheCategory } = require("../redis/product");
+const redisCache = require('../redis/product');
+
+const productCacheService = require('./cache/product-cache');
+const { ThrowError } = require("../errors/AppError");
 
 //Consume tabla con vista previa
-const getProducts = async () => {
-    let allProducts = await dbProduct.getProducts()
+const getProducts = async (
+    limit,
+    offset,
+    sortBy,
+    order
+) => {
+    const allowedSort = ['id', 'title', 'price', 'created'];
+    const allowedOrder = ['ASC', 'DESC'];
+    
+    if(!allowedSort.includes(sortBy)){
+        throw new ThrowError(
+            'Ordenamiento incorrecto',
+            400,
+            'BAD_REQUEST'
+        )
+    }else if(!allowedOrder.includes(order.toUpperCase())){
+        throw new ThrowError(
+            'Orden incorrecto',
+            400,
+            'BAD_REQUEST'
+        )
+    }
+
+    let allProducts = await dbProduct.getProducts(
+        limit,
+        offset,
+        sortBy,
+        order.toUpperCase()
+    )
     
     allProducts = await Promise.all(
         allProducts.map(
@@ -22,36 +51,158 @@ const getProducts = async () => {
     return allProducts;
 }
 
-const getProductsByCategory = async (idCat) => {
-    const providers = await dbProvider.getProviders();
+const getQueryProducts = async (
+    query,
+    limit,
+    offset,
+    sortBy,
+    order
+) => {
+    const allowedSort = ['id', 'title', 'price', 'created'];
+    const allowedOrder = ['ASC', 'DESC'];
+    
+    if(!allowedSort.includes(sortBy)){
+        throw new ThrowError(
+            'Ordenamiento incorrecto',
+            400,
+            'BAD_REQUEST'
+        )
+    }else if(!allowedOrder.includes(order.toUpperCase())){
+        throw new ThrowError(
+            'Orden incorrecto',
+            400,
+            'BAD_REQUEST'
+        )
+    }
 
-    const providerPromises = providers.map(async (provider) => {
-        const providerCategory = await dbCategory.getCategoryProvider(idCat, provider.name);
-        const arrayCategoryIds = providerCategory.map((category => category.prov_category_id))
 
-        if(arrayCategoryIds.length > 0){
-            const categoryCached = await validateCacheCategory(idCat, provider.name)
-            
-            if (!categoryCached){
-                const results = await provider.module.getProductsByCategory(arrayCategoryIds);
-                await cacheProductsByCategory(idCat, results)
+    const normalizeQuery = query
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+
+    const products = await productCacheService.getQueryProducts(
+        query,
+        limit + 1,
+        offset
+    );
+
+    products.sort((a, b) => {
+        const valueA = a[sortBy];
+        const valueB = b[sortBy];
+
+        let comparison;
+
+        if (typeof valueA === 'number' && typeof valueB === 'number') {
+            comparison = valueA - valueB;
+        } else if (typeof valueA === 'string' && typeof valueB === 'string') {
+            const dateA = Date.parse(valueA);
+            const dateB = Date.parse(valueB);
+
+            if (!isNaN(dateA) && !isNaN(dateB)) {
+                comparison = dateA - dateB;
+            } else {
+                comparison = valueA.localeCompare(valueB);
             }
-            return getCacheProductsByCategory(idCat, provider.name)
+        } else {
+            comparison = String(valueA).localeCompare(String(valueB));
         }
 
-        return null;
-    })
+        return order === 'desc' ? -comparison : comparison;
+    });
 
-    const allProducsProvider = await Promise.all(providerPromises);
+    const paginatedProducts = products.slice(
+        offset,
+        offset + limit
+    );
 
-    const products = allProducsProvider.filter(
-        product => product !== null
-    ).flat()
-    
-    return products
+    return {
+        products: paginatedProducts,
+        meta: {
+            limit,
+            offset,
+            sortBy,
+            order,
+            hasMore: offset + limit < products.length
+        }
+    };
 }
+
+
+const getProductsByCategory = async (
+    idCat, 
+    limit, 
+    offset, 
+    sortBy, 
+    order
+) => {
+    const allowedSort = ['id', 'title', 'price', 'created'];
+    const allowedOrder = ['ASC', 'DESC'];
+    
+    if(!allowedSort.includes(sortBy)){
+        throw new ThrowError(
+            'Ordenamiento incorrecto',
+            400,
+            'BAD_REQUEST'
+        )
+    }else if(!allowedOrder.includes(order.toUpperCase())){
+        throw new ThrowError(
+            'Orden incorrecto',
+            400,
+            'BAD_REQUEST'
+        )
+    }
+
+
+    const products = await productCacheService.getProductsByCategory(
+        idCat, 
+        limit + 1,
+        offset
+    );
+    
+    products.sort((a, b) => {
+        const valueA = a[sortBy];
+        const valueB = b[sortBy];
+
+        let comparison;
+
+        if (typeof valueA === 'number' && typeof valueB === 'number') {
+            comparison = valueA - valueB;
+        } else if (typeof valueA === 'string' && typeof valueB === 'string') {
+            const dateA = Date.parse(valueA);
+            const dateB = Date.parse(valueB);
+
+            if (!isNaN(dateA) && !isNaN(dateB)) {
+                comparison = dateA - dateB;
+            } else {
+                comparison = valueA.localeCompare(valueB);
+            }
+        } else {
+            comparison = String(valueA).localeCompare(String(valueB));
+        }
+
+        return order === 'desc' ? -comparison : comparison;
+    });
+    
+    const paginatedProducts = products.slice(
+        offset,
+        offset + limit
+    );
+
+    return {
+        products: paginatedProducts,
+        meta: {
+            limit,
+            offset,
+            sortBy,
+            order,
+            hasMore: offset + limit < products.length
+        }
+    };
+};
 
 module.exports = {
     getProducts,
+    getQueryProducts,
     getProductsByCategory
 }

@@ -33,8 +33,8 @@ const getProvider = async(name) => {
 const getProviderToken = async (name) => {
     const query = `SELECT token 
                     FROM providers
-                   WHERE name = $1
-                   AND active = true`
+                   WHERE name = $1`
+    
     const values = [name]
 
     const { rows } = await pool.query(query, values)

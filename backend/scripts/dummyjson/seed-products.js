@@ -5,7 +5,7 @@ const { Product, createProduct, createImageProduct, getProduct } = require('../.
 const DUMMY_JSON_API = process.env.DUMMYJSON_PRODUCTS_API
 
 const getDummyJsonProducts = async (limit=40) => {
-    const urlApi = `${DUMMY_JSON_API}?sortBy=title&limit=${limit}`;
+    const urlApi = `${DUMMY_JSON_API}?sortBy=id&limit=${limit}`;
 
     console.log(
         `Obteniendo ${limit} productos de jsondummy`

@@ -1,4 +1,5 @@
 require('dotenv').config()
+const logger = require('../config/logger');
 const { createClient } = require('redis');
 
 
@@ -7,6 +8,14 @@ const redisClient = createClient({
 })
 
 redisClient.on('error', (err) => {
+    logger.error(err.message, {
+        name: err.name,
+        data: err.data,
+        stack: err.stack,
+
+        code: "REDIS_ERROR"
+    });
+    
     console.error("Redis Error:", err);
 })
 

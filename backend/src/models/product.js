@@ -42,13 +42,42 @@ const getProduct = async (idProd, idProv) => {
     }
 }
 
-const getProducts = async () => {
-    const query = `SELECT * FROM products
-                   ORDER BY price`;
-    const { rows } = await pool.query(query)
-    
-    return rows
-}
+const getProducts = async (
+  limit,
+  offset,
+  sortBy,
+  order,
+) => {
+  const params = [];
+  const conditions = [];
+
+  let query = `SELECT * FROM products`;
+
+  const allowedSortBy = ['id', 'title', 'price', 'created'];
+  const allowedOrder = ['ASC', 'DESC'];
+
+  if (sortBy && allowedSortBy.includes(sortBy)) {
+    const safeOrder = allowedOrder.includes(order?.toUpperCase())
+      ? order.toUpperCase()
+      : 'ASC';
+
+    query += ` ORDER BY ${sortBy} ${safeOrder}`;
+  }
+
+  if (limit !== undefined) {
+    params.push(limit);
+    query += ` LIMIT $${params.length}`;
+  }
+
+  if (offset !== undefined) {
+    params.push(offset);
+    query += ` OFFSET $${params.length}`;
+  }
+  
+  const { rows } = await pool.query(query, params);
+
+  return rows;
+};
 
 const getLastProductsNotUpdated = async(providerName, limit = 5) => {
     //Mas antiguos primero

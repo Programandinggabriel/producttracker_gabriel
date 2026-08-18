@@ -2,28 +2,11 @@ require("dotenv").config();
 const ebayAuth = require('../../src/providers/ebay/auth')
 const mapEbayProduct = require('../../src/providers/ebay/product-mapper')
 const { Product, createProduct, createImageProduct, getProduct } = require('../../src/models/product')
+const { getProviderCategories } = require('../../src/models/provider-category')
 const EBAY_API_URL = process.env.EBAY_API;
 const EBAY_MARKET_PLACE_ID = process.env.EBAY_MARKETPLACE_ID
 const TOTAL_PRODUCTS = 40;
 
-const CATEGORIES = [
-    {
-        id: '58058',
-        name: 'Computers/Tablets & Networking'
-    },
-    {
-        id: '38051',
-        name: 'Sports'
-    },
-    {
-        id: '1249',
-        name: 'Video Games & Consoles'
-    },
-    {
-        id: '51008',
-        name: 'Fragrances'
-    }
-]
 
 async function  searchEbayProducts(token, categoryId, limit=10) {
     const params = new URLSearchParams({
@@ -69,11 +52,11 @@ async function  searchEbayProducts(token, categoryId, limit=10) {
     }
 }
 
-async function getProductsFromEbay(token) {
+async function getProductsFromEbay(token, categories) {
     const products = [];
     let currentToken = token;
 
-    for (const category of CATEGORIES) {
+    for (const category of categories) {
 
         if (products.length >= TOTAL_PRODUCTS){
             break;
@@ -102,7 +85,7 @@ async function getProductsFromEbay(token) {
 
             products.push({
                 item,
-                category,
+                category: category.id,
             });
         }
     }
@@ -136,8 +119,15 @@ async function saveProducts(products) {
 async function main() {
     try{
         const token = await ebayAuth.getEbayAccessToken();
+        const providerCategories = await getProviderCategories('ebay', 4);
+        const categories = providerCategories.map(category => {
+            return {
+                id: category.external_id,
+                name: category.name
+            }
+        })
 
-        const ebayProducts = await getProductsFromEbay(token)
+        const ebayProducts = await getProductsFromEbay(token, categories)
 
         console.log(
             `Productos obtenidos desde eBay: ${ebayProducts.length}`

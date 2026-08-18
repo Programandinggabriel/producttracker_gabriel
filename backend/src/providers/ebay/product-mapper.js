@@ -39,7 +39,7 @@ function mapEbayProduct ( { item, category }) {
         currency: item.price?.currency,
         images,
         url: item.itemWebUrl || "",
-        category: category.id,
+        category: category,
         aviable: true,
     });
 }

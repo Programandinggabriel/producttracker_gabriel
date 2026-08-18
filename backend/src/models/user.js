@@ -21,6 +21,14 @@ const findUserByUsername = async (username) => {
     return rows[0];
 }
 
+const findUserByEmail = async (email) => {
+    const query = 'SELECT * FROM users WHERE email = $1'
+    const values = [email]
+
+    const { rows } = await pool.query(query, values);
+    return rows[0];
+}
+
 const createDbUser = async (user) => {
     const { v4: uuidv4 } = await import('uuid');
     const { name, email, password, username } = user;
@@ -51,7 +59,9 @@ const updateDbUser = async (id, user) => {
 const deleteDbUser = async (id) => {
     const query = 'DELETE FROM users WHERE id = $1';
     const values = [id];
-    await pool.query(query, values);
+
+    const result = await pool.query(query, values);
+    return result.rowCount > 0;
 }
 
 const resetDbUserPassword = async (email, newPassword) => {
@@ -65,11 +75,35 @@ const resetDbUserPassword = async (email, newPassword) => {
     return rows[0];
 }
 
+//Favorites
+const createDbFavorite = async(idProduct, idUser) => {
+    const query = `INSERT INTO users_product_favorite (user_id, product_id)
+	               VALUES ($1, $2) RETURNING *`;
+    const values = [idUser, idProduct]
+    console.log(idUser, idProduct)
+    const { rows } = await pool.query(query, values);
+    
+    return rows[0]
+}
+
+const getDbFavorite = async (idUser) => {
+    const query = `SELECT * 
+                    FROM users_product_favorite
+                   WHERE user_id = $1`
+    const values = [idUser]
+    const { rows } = await pool.query(query, values)
+
+    return rows
+}
+
 module.exports = {
     findUserByUsername,
+    findUserByEmail,
     getDbUsers,
     createDbUser,
     updateDbUser,
     deleteDbUser,
-    resetDbUserPassword
+    resetDbUserPassword,
+    createDbFavorite,
+    getDbFavorite
 }

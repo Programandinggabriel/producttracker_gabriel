@@ -8,6 +8,20 @@ const { ThrowError } = require("../../errors/AppError");
 const EBAY_API_URL = process.env.EBAY_API;
 const EBAY_MARKET_PLACE_ID = process.env.EBAY_MARKETPLACE_ID
 
+let refreshing = null;
+
+const getFreshToken = async () => {
+    if (!refreshing) {
+        refreshing = ebayAuth
+            .refreshEbayAccessToken()
+            .finally(() => {
+                refreshing = null;
+            });
+    }
+
+    return refreshing;
+};
+
 async function request(url, accessToken) {
     return fetch(
         url,
@@ -20,26 +34,36 @@ async function request(url, accessToken) {
     );
 }
 
-const getProductsByIds = async (arrayIds) => {
-    const token = await ebayAuth.getEbayAccessToken();
+const ebayRequest = async (url) => {
+    let token = await ebayAuth.getEbayAccessToken();
 
+    let response = await request(
+        url,
+        token
+    );
+
+    if (response.status === 401) {
+        token = await getFreshToken();
+
+        response = await request(
+            url,
+            token
+        );
+    }
+
+    return response;
+};
+
+
+const getProductsByIds = async (arrayIds) => {
     const product = await Promise.all(
         arrayIds.map(async (id) => {
-            let response = await request(
-                `${EBAY_API_URL}/buy/browse/v1/item/${id}`,
-                token
+            let response = await ebayRequest(
+                `${EBAY_API_URL}/buy/browse/v1/item/${id}`
             );
 
             if (response.status === 404){
                 return [];
-            }
-
-            if (response.status === 401) {
-                const newToken = await ebayAuth.refreshEbayAccessToken();
-                response = await request(
-                    `${EBAY_API_URL}/buy/browse/v1/item/${id}`, 
-                    newToken
-                );
             }
 
             if (!response.ok) {
@@ -58,15 +82,13 @@ const getProductsByIds = async (arrayIds) => {
             }
 
             const product = await response.json();
-            const validateCategory = arrayIds.includes(product.categoryId);
 
             const mapProduct = mapEbayProduct({
                 item: product,
-                category: validateCategory ? product.categoryId : null
+                category: product.categoryId
             })
 
             return mapProduct
-
         })
     );
 
@@ -78,25 +100,15 @@ const queryProducts = async (
     limit,
     offset
 ) => {
-    const token = await ebayAuth.getEbayAccessToken()
     const params = new URLSearchParams({
         q: query,
         limit: limit,
         offset: offset
     })
 
-    let response = await request(
-        `${EBAY_API_URL}/buy/browse/v1/item_summary/search?${params}`,
-        token
+    let response = await ebayRequest(
+        `${EBAY_API_URL}/buy/browse/v1/item_summary/search?${params}`
     )
-
-    if(response.status === 401){
-        const newToken = await ebayAuth.refreshEbayAccessToken();
-        response  = await request(
-            `${EBAY_API_URL}/buy/browse/v1/item_summary/search?${params}`,
-            newToken
-        );
-    }
 
     if(!response.ok){
         const error = await response.text()
@@ -134,8 +146,6 @@ const getProductsByCategory = async (categoryIds, limit, offset) => {
     if(!categoryIds.length){
         return [];
     }
-
-    const token = await ebayAuth.getEbayAccessToken();
     
     const categoryCount = categoryIds.length;
 
@@ -158,18 +168,9 @@ const getProductsByCategory = async (categoryIds, limit, offset) => {
                 offset: offset
             });
 
-            let response = await request(
-                `${EBAY_API_URL}/buy/browse/v1/item_summary/search?${params}`,
-                token
+            let response = await ebayRequest(
+                `${EBAY_API_URL}/buy/browse/v1/item_summary/search?${params}`
             );
-            
-            if (response.status === 401) {
-                const newToken = await ebayAuth.refreshEbayAccessToken();
-                response = await request(
-                    `${EBAY_API_URL}/buy/browse/v1/item_summary/search?${params}`, 
-                    newToken
-                );
-            }
 
             if (!response.ok) {
                 const error = await response.text();

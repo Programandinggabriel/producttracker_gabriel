@@ -169,7 +169,13 @@ const createProductFavorite = async (idUser, provider, idProduct) => {
     let external_product;
     
     if(exists_external_product.rowCount){
-        external_product = exists_external_product.product
+        const product = exists_external_product.product
+        const arrayImages = await dbProduct.getExternalProductImages(product.id);
+
+        external_product = {
+            ...product,
+            images: arrayImages.map(img => img.image)
+        }
     }else{
         const products = await resultProvider.provider.module.getProductsByIds([
             idProduct

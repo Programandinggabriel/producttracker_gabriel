@@ -59,14 +59,15 @@ const getProviders = async () => {
 
 const updateProviderToken = async (name, token) => {
     const query = `UPDATE providers 
-                    SET token = $1
+                    SET token = $1,
+                        updated = NOW()
                    WHERE name = $2
                    RETURNING *`;
     const values = [token, name]
 
     const { rows } = await pool.query(query, values)
     
-    return rows
+    return rows[0]
 }
 
 module.exports = {

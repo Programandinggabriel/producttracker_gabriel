@@ -28,6 +28,7 @@ class Product {
     }
 }
 
+//Products
 const getProduct = async (idProd, idProv) => {
     const query = `SELECT * FROM products 
                    WHERE product_id = $1
@@ -102,14 +103,12 @@ const createProduct = async (product) => {
     const { v4: uuidv4 } = await import('uuid');
     const id = uuidv4().replace(/-/g, '').slice(0, 10);
     
-    const query = `INSERT INTO products(
-                id, provider_id, product_id, title, description, 
-                price, currency, url, category, aviable, 
-                stock
-            )
-	        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-            RETURNING *;
-    `
+    const query = `INSERT INTO products(id, provider_id, product_id, 
+                               title, description, price, currency, url, 
+                               category, aviable, stock)
+	               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                   RETURNING *`;
+    
     const values = [
         id, product.providerId, product.productId, product.title, product.description,
         product.price, product.currency, product.url, product.category, product.aviable,
@@ -121,14 +120,13 @@ const createProduct = async (product) => {
     return rows[0]
 }
 
-const updateProduct = async(idProd, idProv, product) => {
+const providerUpdateProduct = async(idProd, idProv, product) => {
     const query = `UPDATE products
-                   SET title=$1, description=$2, price=$3, currency=$4, 
-                       url=$5, category=$6, aviable=$7, stock=$8, updated= NOW(),
-                       provider_updated_at = NOW()
-                    WHERE provider_id = $9
-                      AND product_id = $10
-                    RETURNING *;`
+                    SET title=$1, description=$2, price=$3, currency=$4, 
+                        url=$5, category=$6, aviable=$7, stock=$8, provider_updated_at = NOW()
+                   WHERE provider_id = $9
+                     AND product_id = $10
+                   RETURNING *;`
     const values = [
         product.title, product.description, product.price, product.currency, 
         product.url, product.category, product.aviable, product.stock,
@@ -139,7 +137,7 @@ const updateProduct = async(idProd, idProv, product) => {
     return rows
 }
 
-//Images
+//Products Images
 const createImageProduct = async (id, urlImage, position) => {
     const { v4: uuidv4 } = await import('uuid');
     const Imgid = uuidv4().replace(/-/g, '').slice(0, 10);
@@ -167,13 +165,83 @@ const getProductImages = async (id) => {
     return rows
 }
 
+//External Products
+
+const getExternalProduct = async (idProv, idProd) => {
+     const query = `SELECT * FROM external_products 
+                     WHERE product_id = $1
+                       AND provider_id = $2`;
+    const values = [idProd, idProv]
+
+    const { rows, rowCount } = await pool.query(query, values)
+
+    return {
+        product: rows[0],
+        rowCount: rowCount
+    }
+}
+
+const createExternalProduct = async (product) => {
+    const { v4: uuidv4 } = await import('uuid');
+    const id = uuidv4().replace(/-/g, '').slice(0, 10);
+
+    const query = `INSERT INTO external_products(id, provider_id, product_id,
+                                                 title, description, price, currency, url, 
+                                                 category, aviable, stock)
+	               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                   RETURNING *`;
+    const values = [
+        id, product.providerId, product.productId, product.title, product.description,
+        product.price, product.currency, product.url, product.category, product.aviable,
+        product.stock
+    ]
+
+    const { rows } = await pool.query(query, values)
+
+    return rows[0]
+}
+
+
+//External Products Images
+const getExternalProductImages = async (id) => {
+    const query = `SELECT image,
+                          position
+                   FROM external_products_images
+                   WHERE id_product = $1
+                   ORDER BY position ASC`
+    const values = [id]
+
+    const { rows } = await pool.query(query, values)
+
+    return rows
+}
+
+const createImageExternalProduct = async (id, urlImage, position) => {
+    const { v4: uuidv4 } = await import('uuid');
+    const Imgid = uuidv4().replace(/-/g, '').slice(0, 10);
+
+    const query = `INSERT INTO external_products_images (id, id_product, image, "position")
+	               VALUES ($1, $2, $3, $4) 
+                   RETURNING *;`
+    const values = [Imgid, id, urlImage, position]
+
+    const { rows } = await pool.query(query, values)
+    
+    return rows[0];
+}
+
+
 module.exports = {
     Product,
     getProduct,
     getProducts,
     getLastProductsNotUpdated,
     createProduct,
-    updateProduct,
+    providerUpdateProduct,
     createImageProduct,
-    getProductImages
+    getProductImages,
+    getExternalProduct,
+    createExternalProduct,
+    getExternalProductImages,
+    createImageExternalProduct
 };

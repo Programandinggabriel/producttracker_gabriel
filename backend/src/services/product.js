@@ -40,9 +40,10 @@ const getProducts = async (
     allProducts = await Promise.all(
         allProducts.map(
             async (product) => {
+                const arrayImgs = await dbProduct.getProductImages(product.id)
                 return {
                     ...product,
-                    images: await dbProduct.getProductImages(product.id)
+                    images: arrayImgs.map(img => img.image)
                 }
             }
         )

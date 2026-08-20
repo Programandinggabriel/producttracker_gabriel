@@ -29,9 +29,11 @@ const saveProducts = async (products) => {
             const newProduct = await createProduct(product);
             
             if(Array.isArray(product.images)){
-                await product.images.forEach(async (img, index) => {
-                    await createImageProduct(newProduct.id, img, index)
-                })
+                const promises = product.images.map((img, index) => 
+                    createImageProduct(newProduct.id, img, index)
+                )
+                
+                await Promise.all(promises)
             }
         }else{
             console.log(

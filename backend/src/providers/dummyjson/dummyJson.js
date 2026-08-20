@@ -4,17 +4,34 @@ const mapDummyJsonProduct = require('./product-mapper');
 
 const DUMMY_JSON_API = process.env.DUMMYJSON_PRODUCTS_API
 
-//Funcion para el job
 const getProductsByIds = async (arrayIds) => {
     const products = await Promise.all(
         arrayIds.map(async (id) => {
             const result = await fetch(`${DUMMY_JSON_API}/${id}`);
-            const product = await result.json();
+            
+            if(result.ok){
+                const product = await result.json();
+                return mapDummyJsonProduct(product)
+            }else if(result.status === 404){
+                return [];
+            }else{
+                const error = await response.text();
 
-            return mapDummyJsonProduct(product)
+                throw new ThrowError(
+                    `Error obteniendo producto por ID`,
+                    500,
+                    'API_DUMMYJSON_ERROR',
+                    {
+                        product_id: id,
+                        api_dummyjson_status: response.status,
+                        api_dummyjson_error: error
+                    }
+                )
+            
+            }
+            
         })
     );
-
 
     return products
 }
@@ -30,6 +47,21 @@ const queryProducts = async (
         skip: offset
     });
     const result = await fetch(`${DUMMY_JSON_API}/search?${params}`);
+    
+    if(!result.ok){
+        const error = await response.text();
+        throw new ThrowError(
+            `Error obteniendo producto por ID`,
+            500,
+            'API_DUMMYJSON_ERROR',
+            {
+                product_id: id,
+                api_dummyjson_status: response.status,
+                api_dummyjson_error: error
+            }
+        )
+    }
+
     const response = await result.json();
     const products = response.products;
 
@@ -63,6 +95,21 @@ const getProductsByCategory = async (categoryIds, limit, offset) => {
             const result = await fetch(
                 `${DUMMY_JSON_API}/category/${id}?${params}`
             );
+
+            if(!result.ok){
+                const error = await response.text();
+
+                throw new ThrowError(
+                    `Error obteniendo producto por ID`,
+                    500,
+                    'API_DUMMYJSON_ERROR',
+                    {
+                        product_id: id,
+                        api_dummyjson_status: response.status,
+                        api_dummyjson_error: error
+                    }
+                )
+            }
 
             const response = await result.json();
 

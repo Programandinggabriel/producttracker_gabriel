@@ -181,6 +181,26 @@ const getExternalProduct = async (idProv, idProd) => {
     }
 }
 
+const getLastExternalProductsNotUpdated = async(providerName, limit = 5) => {
+    //Mas antiguos primero
+    const query = `SELECT
+                    id,
+                    provider_id,
+                    product_id,
+                    provider_updated_at
+                FROM external_products
+                WHERE provider_id = $1
+                ORDER BY provider_updated_at ASC NULLS FIRST
+                LIMIT $2`;
+        
+    const values = [providerName, limit];
+
+    const { rows } = await pool.query(query, values)
+
+    return rows
+}
+
+
 const createExternalProduct = async (product) => {
     const { v4: uuidv4 } = await import('uuid');
     const id = uuidv4().replace(/-/g, '').slice(0, 10);
@@ -199,6 +219,23 @@ const createExternalProduct = async (product) => {
     const { rows } = await pool.query(query, values)
 
     return rows[0]
+}
+
+const providerUpdateExternalProduct = async(idProd, idProv, product) => {
+    const query = `UPDATE external_products
+                    SET title=$1, description=$2, price=$3, currency=$4, 
+                        url=$5, category=$6, aviable=$7, stock=$8, provider_updated_at = NOW()
+                   WHERE provider_id = $9
+                     AND product_id = $10
+                   RETURNING *;`
+    const values = [
+        product.title, product.description, product.price, product.currency, 
+        product.url, product.category, product.aviable, product.stock,
+        idProv, idProd    
+    ]
+
+    const { rows } = await pool.query(query, values)
+    return rows
 }
 
 
@@ -241,7 +278,9 @@ module.exports = {
     createImageProduct,
     getProductImages,
     getExternalProduct,
+    getLastExternalProductsNotUpdated,
     createExternalProduct,
+    providerUpdateExternalProduct,
     getExternalProductImages,
     createImageExternalProduct
 };

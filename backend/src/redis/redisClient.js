@@ -16,7 +16,7 @@ redisClient.on('error', (err) => {
         code: "REDIS_ERROR"
     });
     
-    console.error("Redis Error:", err);
+    console.error("Error, no se pudo conectar a redis");
 })
 
 redisClient.on('connect', ()=> {

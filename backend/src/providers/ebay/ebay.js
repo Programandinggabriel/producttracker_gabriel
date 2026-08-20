@@ -20,7 +20,6 @@ async function request(url, accessToken) {
     );
 }
 
-//Funcion para el job
 const getProductsByIds = async (arrayIds) => {
     const token = await ebayAuth.getEbayAccessToken();
 
@@ -30,6 +29,10 @@ const getProductsByIds = async (arrayIds) => {
                 `${EBAY_API_URL}/buy/browse/v1/item/${id}`,
                 token
             );
+
+            if (response.status === 404){
+                return [];
+            }
 
             if (response.status === 401) {
                 const newToken = await ebayAuth.refreshEbayAccessToken();

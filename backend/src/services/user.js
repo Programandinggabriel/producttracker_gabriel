@@ -2,6 +2,9 @@ const dbUser = require("../models/user");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { ThrowError } = require("../errors/AppError");
+const dbProvider = require('../models/provider')
+const dbProduct = require('../models/product')
+
 
 require('dotenv').config();
 
@@ -31,9 +34,14 @@ const login = async (username, password) => {
 
     // Generate a token or session for the user (this is just a placeholder)
     const token = jwt.sign(
-        {id: user.id, username: user.username}, 
+        {
+            id: user.id, 
+            username: user.username
+        }, 
         process.env.JWT_SECRET, 
-        {expiresIn: '1h'}
+        {
+            expiresIn: '1h'
+        }
     );
     return token;
 }
@@ -112,22 +120,136 @@ const resetPassword = async (email, newPassword) => {
 }
 
 //Favorites
-const createProductFavorite = async (idProduct, idUser) => {
-    if(!idProduct){
+const createProductFavorite = async (idUser, provider, idProduct) => {
+    if(!provider || !idProduct){
           throw new ThrowError(
-            "Missing required fields: id product", 
+            "Missing required fields: provider, external_id", 
             400, 
             "BAD_REQUEST"
         );
     }
+
+    const resultProvider = await dbProvider.getProvider(provider);
+
+    if(resultProvider.rowCount === 0){
+        throw new ThrowError(
+            "Provider doesnt exist", 
+            404,
+            "PROVIDER_NOT_FOUND",
+            {
+                provider: provider
+            }
+        );
+    }
+
+    const providerName = resultProvider.provider.name;
+
+    const existsProductFav = await dbUser.getDbUserProductFavorite(
+        idUser, 
+        providerName,
+        idProduct
+    );
+
+    if(existsProductFav){
+        throw new ThrowError(
+            "Product favorite already exists", 
+            400,
+            "BAD_REQUEST",
+            {
+                product: existsProductFav.id
+            }
+        );
+    }
+
+    const exists_external_product = await dbProduct.getExternalProduct(
+        providerName, 
+        idProduct
+    );
+
+    let external_product;
     
-    const newFav = await dbUser.createDbFavorite(idProduct, idUser)
-    return newFav;
+    if(exists_external_product.rowCount){
+        external_product = exists_external_product.product
+    }else{
+        const products = await resultProvider.provider.module.getProductsByIds([
+            idProduct
+        ]);
+
+        external_product = products.flat()[0];
+
+        if(!external_product){
+            throw new ThrowError(
+                "Incorrect Product ID", 
+                404,
+                "PRODUCT_NOT_FOUND",
+                {
+                    product: idProduct
+                }
+            );
+        }
+
+        const newProduct = await dbProduct.createExternalProduct(
+            external_product
+        );
+
+        if(Array.isArray(external_product.images)){
+            const promises = external_product.images.map((img, index) => 
+                dbProduct.createImageExternalProduct(
+                    newProduct.id,
+                    img,
+                    index
+                )
+            );
+            await Promise.all(promises)
+        }
+
+        external_product = {
+            ...external_product,
+            id: newProduct.id 
+        };
+    }   
+
+    const newProductFav = await dbUser.createDbFavorite(
+        external_product.id,
+        idUser
+    );
+
+    return external_product;
 }
 
 const getProductFavorite = async (idUser) => {
-    const allUsrFav = await dbUser.getDbFavorite(idUser);
-    return allUsrFav
+    const allUserFavorites = await dbUser.getDbUserProductsFavorites(idUser);
+    const productsFavorite = await Promise.all(
+        allUserFavorites.map(async (product) => {
+            const arrayImages = await dbProduct.getExternalProductImages(product.id);
+            
+            return {
+                ...product,
+                images: arrayImages.map(img => img.image)
+            }
+        })
+    )
+
+    return productsFavorite
+}
+
+const deleteProductFavorite = async (idUser, idProd) => {
+    const existsFav = await dbUser.getDbFavorite(idUser, idProd);
+
+    if(!existsFav){
+        throw new ThrowError(
+            "Product favorite doesnt exists", 
+            404,
+            "PRODUCT_NOT_FOUND",
+            {
+                product: idProd
+            }
+        );
+    }
+    
+    const deleted = await dbUser.deleteDbFavorite(idUser, idProd)
+
+    return deleted
 }
 
 module.exports = {
@@ -138,5 +260,6 @@ module.exports = {
     deleteUser,
     resetPassword,
     createProductFavorite,
-    getProductFavorite
+    getProductFavorite,
+    deleteProductFavorite
 }

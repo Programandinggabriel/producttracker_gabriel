@@ -31,7 +31,7 @@ async function refreshProducts() {
         for(const productsProvider of results){
             for (const objProduct  of productsProvider){
 
-                const updatedProd = await dbProduct.updateProduct(
+                const updatedProd = await dbProduct.providerUpdateProduct(
                     objProduct.productId, 
                     objProduct.providerId,
                     objProduct

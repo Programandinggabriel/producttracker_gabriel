@@ -8,7 +8,11 @@ const hashPassword = async (password) => {
 }
 
 const getDbUsers = async () => {
-    const query = 'SELECT * FROM users';
+    const query = `SELECT id,
+                          name,
+                          email,
+                          username
+                   FROM users`;
     const { rows } = await pool.query(query);
     return rows;
 };
@@ -37,7 +41,8 @@ const createDbUser = async (user) => {
     const hashedPassword = await hashPassword(password);
     
     const query = `INSERT INTO users (id, name, email, password, username)
-                   VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+                   VALUES ($1, $2, $3, $4, $5)
+                   RETURNING id, name, email, username`;
 
     const values = [userId, name, email, hashedPassword, username];     
     const { rows } = await pool.query(query, values);
@@ -49,7 +54,7 @@ const updateDbUser = async (id, user) => {
     const query = `UPDATE users 
                     SET name = $1, email = $2, username = $3
                     WHERE id = $4 
-                   RETURNING *`;
+                   RETURNING id, name, email, username`;
     
     const values = [name, email, username, id];
     const { rows } = await pool.query(query, values);
@@ -80,20 +85,61 @@ const createDbFavorite = async(idProduct, idUser) => {
     const query = `INSERT INTO users_product_favorite (user_id, product_id)
 	               VALUES ($1, $2) RETURNING *`;
     const values = [idUser, idProduct]
-    console.log(idUser, idProduct)
+
     const { rows } = await pool.query(query, values);
     
     return rows[0]
 }
 
-const getDbFavorite = async (idUser) => {
-    const query = `SELECT * 
+const getDbFavorite = async (idUser, idProduct) => {
+    const query = `SELECT *
                     FROM users_product_favorite
-                   WHERE user_id = $1`
+                   WHERE user_id = $1
+                     AND product_id = $2`;
+    const values = [idUser, idProduct];
+
+    const { rows } = await pool.query(query, values);
+
+    return rows[0]
+}
+
+const getDbUserProductFavorite = async(idUser, provider, externalIdProduct) => {
+    const query = `SELECT eprods.*
+                    FROM users_product_favorite ufav
+                   JOIN external_products eprods
+                     ON ufav.product_id = eprods.id
+                   WHERE ufav.user_id = $1
+                     AND eprods.provider_id = $2
+                     AND eprods.product_id = $3`;
+    const values = [idUser, provider, externalIdProduct];
+
+    const { rows } = await pool.query(query, values);
+
+    return rows[0]
+}
+
+const getDbUserProductsFavorites = async (idUser) => {
+    const query = `SELECT eprods.*
+                    FROM users_product_favorite ufav
+                   JOIN external_products eprods
+                     ON ufav.product_id = eprods.id
+                   WHERE ufav.user_id = $1`;
+    
     const values = [idUser]
     const { rows } = await pool.query(query, values)
 
     return rows
+}
+
+const deleteDbFavorite = async (idUser, idProd) => {
+    const query = `DELETE FROM users_product_favorite 
+                    WHERE user_id = $1 
+                      AND product_id = $2`;
+    
+    const values = [idUser, idProd];
+
+    const result = await pool.query(query, values);
+    return result.rowCount > 0;
 }
 
 module.exports = {
@@ -105,5 +151,8 @@ module.exports = {
     deleteDbUser,
     resetDbUserPassword,
     createDbFavorite,
-    getDbFavorite
+    getDbFavorite,
+    getDbUserProductFavorite,
+    getDbUserProductsFavorites,
+    deleteDbFavorite
 }

@@ -63,11 +63,12 @@ const resetPassword = async (req, res, next) => {
 //Favorites
 const createProductFavorite = async(req, res, next) => {
   try{
-    const idProduct = req.params.idProd;
+    const { provider, external_id } = req.body;
     const idUser = req.user.id
     
-    const newFav = await  userService.createProductFavorite(idProduct, idUser);
-    res.json(newFav)
+    const newProducFav = await  userService.createProductFavorite(idUser, provider, external_id);
+    
+    res.json(newProducFav)
   }catch(error){
     next(error)
   }
@@ -77,7 +78,21 @@ const getProductFavorite = async (req, res, next) => {
   try{
     const idUser = req.user.id
     const allUsrFav = await userService.getProductFavorite(idUser);
+    
     res.json(allUsrFav)
+  }catch(error){
+    next(error)
+  }
+}
+
+const deleteProductFavorite = async(req, res, next) => {
+  try{
+    const idUser = req.user.id;
+    const { idProd } = req.params;
+    
+    const deleted = await userService.deleteProductFavorite(idUser, idProd)
+    
+    res.status(200).json({ message: `Product favorite with ID: ${idProd} deleted` });
   }catch(error){
     next(error)
   }
@@ -92,5 +107,6 @@ module.exports = {
     deleteUser,
     resetPassword,
     createProductFavorite,
-    getProductFavorite
+    getProductFavorite,
+    deleteProductFavorite
 }

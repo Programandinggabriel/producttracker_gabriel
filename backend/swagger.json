@@ -96,7 +96,7 @@
         }
       }
     },
-    "/users/": {
+    "/users": {
       "get": {
         "tags": ["Users"],
         "description": "Obtener usuarios",
@@ -203,16 +203,25 @@
         }
       }
     },
-    "/users/favorites/product/{idProd}": {
+    "/users/favorites/product": {
       "post": {
         "tags": ["Users"],
-        "description": "Obtener producto favorito del usuario",
+        "description": "Crear producto favorito del usuario",
         "parameters": [
           {
-            "name": "name",
+            "name": "body",
             "in": "body",
-            "required": true,
-            "type": "string"
+            "schema": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "example": "Amazon"
+                },
+                "external_id": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -223,9 +232,7 @@
             "description": "Unauthorized"
           }
         }
-      }
-    },
-    "/users/favorites/product": {
+      },
       "get": {
         "tags": ["Users"],
         "description": "Obtener productos favoritos del usuario",
@@ -240,7 +247,29 @@
         }
       }
     },
-    "/categories/": {
+    "/users/favorites/product/{id}": {
+      "delete": {
+        "tags": ["Users"],
+        "description": "Eliminar producto favorito del usuario",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/categories": {
       "get": {
         "tags": ["Categories"],
         "description": "Obtener categorias",
@@ -255,7 +284,7 @@
         }
       }
     },
-    "/products/": {
+    "/products": {
       "get": {
         "tags": ["Products"],
         "description": "Obtener vista previa de productos",

@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 const routes = require("./routes");
 const errorHandler = require("./middleware/error");
 const { connectRedis } = require("./redis/redisClient");
@@ -10,13 +11,15 @@ const app = express();
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('../swagger.json');
 
+app.use(cors())
+app.use(express.json());
+
 //Redis
 async function startRedis() {
   await connectRedis();
 }
 startRedis()
 
-app.use(express.json());
 
 //Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));

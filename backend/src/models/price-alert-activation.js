@@ -24,6 +24,24 @@ const getAlertActivationByAlertId = async (id, status=[]) => {
     return rows;
 }
 
+const getAlertActivationByAlertAndHistoryId = async (alertId, historyId) => {
+    const query = `SELECT id,
+                          alert_id,
+                          history_id,
+                          notified_status
+                     FROM price_alerts_activation
+                   WHERE alert_id = $1
+                     AND history_id = $2`;
+    const values = [
+        alertId,
+        historyId
+    ];
+
+    const { rows } = await pool.query(query, values);
+
+    return rows[0];
+}
+
 const createAlertActivation = async (
     alertId,
     historyId
@@ -73,6 +91,7 @@ const setNotifiedAtAlertActivation = async (id) => {
 
 module.exports = {
     getAlertActivationByAlertId,
+    getAlertActivationByAlertAndHistoryId,
     createAlertActivation,
     setStatusAlertActivation,
     setNotifiedAtAlertActivation

@@ -166,7 +166,6 @@ const getProductImages = async (id) => {
 }
 
 //External Products
-
 const getExternalProductById = async (id) => {
      const query = `SELECT * FROM external_products 
                      WHERE id = $1`;
@@ -189,6 +188,27 @@ const getExternalProduct = async (idProv, idProd) => {
         product: rows[0],
         rowCount: rowCount
     }
+}
+
+const getLastExternalProductsNotClaimed = async(limit = 5) => {
+    //Mas antiguos primero
+    const query = `SELECT
+                    id,
+                    provider_id,
+                    product_id,
+                    price,
+                    currency,
+                    price_change_claimed_at
+                FROM external_products
+                WHERE id != '8a9e63b368'
+                ORDER BY price_change_claimed_at ASC NULLS FIRST
+                LIMIT $1`;
+        
+    const values = [limit];
+
+    const { rows } = await pool.query(query, values)
+
+    return rows
 }
 
 const getLastExternalProductsNotUpdated = async(providerName, limit = 5) => {
@@ -230,6 +250,18 @@ const createExternalProduct = async (product) => {
 
     return rows[0]
 }
+
+const updateExternalProductPriceChangeClaimedAt = async(id) => {
+    const query = `UPDATE external_products
+                    SET price_change_claimed_at = NOW()
+                   WHERE id = $1
+                   RETURNING *`
+    const values = [id];
+
+    const { rows } = await pool.query(query, values);
+    return rows[0];
+}
+
 
 const providerUpdateExternalProduct = async(idProd, idProv, product) => {
     const query = `UPDATE external_products
@@ -291,8 +323,10 @@ module.exports = {
     getProductImages,
     getExternalProductById,
     getExternalProduct,
+    getLastExternalProductsNotClaimed,
     getLastExternalProductsNotUpdated,
     createExternalProduct,
+    updateExternalProductPriceChangeClaimedAt,
     providerUpdateExternalProduct,
     getExternalProductImages,
     createImageExternalProduct

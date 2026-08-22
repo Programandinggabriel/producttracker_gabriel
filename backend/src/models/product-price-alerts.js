@@ -5,6 +5,19 @@ const ALLOWED_DIRECTIONS = [
     'DECREASE'
 ];
 
+const getAllActiveUserProductsPriceAlerts = async() => {
+    const query = `SELECT id,
+                          user_id,
+                          product_id,
+                          target_price,
+                          direction
+                    FROM products_price_alerts
+                   WHERE active = true`;
+    
+    const { rows } = await pool.query(query);
+    return rows;
+}
+
 const getUsersProductPriceAlerts = async() =>{
     const query = `SELECT user_id, 
                           STRING_AGG(id, ', ') as user_alerts
@@ -29,19 +42,6 @@ const getProductPriceAlertById = async (id) => {
     const { rows } = await pool.query(query, values);
     
     return rows[0]
-}
-
-const getLastPriceAlertsNotClaimed =  async (limit=5) => {
-    const query = `SELECT * 
-                    FROM products_price_alerts
-                   WHERE active = true
-                   ORDER BY price_change_claimed_at ASC NULLS FIRST
-                   LIMIT $1`;
-    const values = [limit];
-
-    const { rows } = await pool.query(query, values)
-
-    return rows
 }
 
 const getUserProductPriceAlert = async (idUser, alertDirection ,provider, idProd) => {
@@ -103,17 +103,6 @@ const createUserProductPriceAlert = async (
     return rows[0]
 }
 
-const updatePriceChangeClamiedAt = async(id) => {
-    const query = `UPDATE products_price_alerts
-                    SET price_change_claimed_at = NOW()
-                   WHERE id = $1
-                   RETURNING *`
-    const values = [id];
-
-    const { rows } = await pool.query(query, values);
-    return rows[0];
-}
-
 const updateUserProductPriceAlert =  async (
     idUser,
     idAlert,
@@ -151,13 +140,12 @@ const deleteUserProductPriceAlert = async (userId, alertId) => {
 module.exports = {
     ALLOWED_DIRECTIONS,
     getProductPriceAlertById,
+    getAllActiveUserProductsPriceAlerts,
     getUsersProductPriceAlerts,
-    getLastPriceAlertsNotClaimed,
     getUserProductPriceAlert,
     getUserPriceAlerts,
     getUserPriceAlert,
     createUserProductPriceAlert,
-    updatePriceChangeClamiedAt,
     updateUserProductPriceAlert,
     deleteUserProductPriceAlert
 }

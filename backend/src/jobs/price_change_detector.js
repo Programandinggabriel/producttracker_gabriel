@@ -1,42 +1,38 @@
-const dbProductPriceAlert = require('../models/product-price-alerts')
+const logger = require('../config/logger');
 const dbProductPriceHistory = require('../models/product-price-history')
-const dbAlertActivation = require('../models/price-alert-activation')
 const dbProduct = require('../models/product')
 const dbProvider = require('../models/provider')
 
-//Alerts price change
 const getPriceChanges = async () => {
-    const alerts = await dbProductPriceAlert.getLastPriceAlertsNotClaimed();
+    const products = await dbProduct.getLastExternalProductsNotClaimed();
     const changes = await Promise.all(
-        alerts.map(async (pAlert) => {
-            const product1 = await dbProduct.getExternalProductById(
-                pAlert.product_id
-            );
+        products.map(async (product) => {
+            const product1 = product;
+            const providerName = product1.provider_id;
+            const external_id = product1.product_id;
 
-            const resultProvider = await dbProvider.getProvider(
-                product1.provider_id
-            );
-
+            const resultProvider = await dbProvider.getProvider(providerName);
             const provider = resultProvider.provider;
-
-            const result = await provider.module.getProductsByIds([
-                product1.product_id //External id
-            ])
-
-            const product2 = result.flat()[0];
             
-            const priceChange = detectedPriceChanges(
-                pAlert.direction,
-                pAlert.target_price,
-                product1,
-                product2
-            );
+            const result = await provider.module.getProductsByIds([external_id])
+            const product2 = result.flat()[0];
+
+            const currentPrice = Number(product1.price);
+            const newPrice = Number(product2.price);
+            
+            let changeDirection;
+            if(Number.isFinite(currentPrice) && Number.isFinite(newPrice)){
+                if(currentPrice < newPrice){
+                    changeDirection = 'INCREASE'
+                }else if(currentPrice > newPrice){
+                    changeDirection = 'DECREASE'
+                }
+            }
 
             return {
-                alertId: pAlert.id,
-                productId: product1.id,
-                direction: pAlert.direction,
-                hasChange: priceChange,
+                productId: product.id,
+                direction: changeDirection,
+                hasChange: changeDirection ? true : false,
                 oldPrice: product1.price,
                 newPrice: product2.price
             }
@@ -48,95 +44,48 @@ const getPriceChanges = async () => {
     return priceChanges
 }
 
-const detectedPriceChanges = (
-    direction, 
-    targetPrice, 
-    oldProduct, 
-    newProduct
-) => {
-    const currentPrice = Number(oldProduct.price);
-    const newPrice = Number(newProduct.price);
-    const target = Number(targetPrice);
-
-    if(
-        !Number.isFinite(currentPrice) || 
-        !Number.isFinite(newPrice) ||
-        !Number.isFinite(target)
-    ){
-        return false;
-    }
-
-    if(direction === 'INCREASE'){
-        return currentPrice < target && newPrice >= target;
-    }else if (direction === 'DECREASE'){
-        return currentPrice > target && newPrice <= target;
-    }
-
-    return false
-}
-
-const savePriceAlertActivation = async (
-    alertId,
-    historyId
-) => {
-    const newActivation = await dbAlertActivation.createAlertActivation(
-        alertId,
-        historyId
-    )
-    return newActivation
-}
-
 const saveHistoryPriceChange = async (
     idProduct, 
     direction,
     oldPrice, 
     newPrice
 ) => {
-    let history;
-
-    const existsHistory = await dbProductPriceHistory.getProductPriceHistoryByPrices(
+    const newHistory = await dbProductPriceHistory.createProductPriceHistory(
         idProduct,
         direction,
-        oldPrice,
+        oldPrice, 
         newPrice
     );
-
-    if (existsHistory){
-        history = existsHistory;
-    }else{
-        const newHistory = await dbProductPriceHistory.createProductPriceHistory(
-            idProduct,
-            direction,
-            oldPrice, 
-            newPrice
-        );
-        history = newHistory;
-    }
-
-    return history
+   
+    return newHistory
 }
 
 const main = async () => {
-    const priceChanges = await getPriceChanges();
+    try{
+        const priceChanges = await getPriceChanges();
 
-    for(const change of priceChanges){
-        if(change.hasChange){
-            const newHistory = await saveHistoryPriceChange(
-                change.productId,
-                change.direction,
-                change.oldPrice,
-                change.newPrice
-            );
-            
-            const newActivation = await savePriceAlertActivation(
-                change.alertId,
-                newHistory.id
-            );
+        for(const change of priceChanges){
+            if(change.hasChange){
+                const newHistory = await saveHistoryPriceChange(
+                    change.productId,
+                    change.direction,
+                    change.oldPrice,
+                    change.newPrice
+                );
+            }
+        
+            await dbProduct.updateExternalProductPriceChangeClaimedAt(
+                    change.productId
+            )
         }
-       
-        await dbProductPriceAlert.updatePriceChangeClamiedAt(
-                change.alertId
-        )
+    }catch(error){
+        console.log('Error ejecutando job price_change_detector')
+        logger.error(error.message, {
+            name: error.name,
+            stack: error.stack,
+
+            code: "JOB_PRICE_CHANGE_ERROR"
+        });
     }
 }
 

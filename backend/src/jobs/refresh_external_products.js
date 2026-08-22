@@ -8,7 +8,7 @@ async function refreshProducts() {
         const providerPromises =  providers.map(async (provider) => {
             try{
                 const providerProducts = 
-                    await dbProduct.getLastExternalProductsNotUpdated(provider.name);
+                    await dbProduct.getExternalProductsPriceChangeClaimedAt(provider.name);
                 
                 //Array id
                 const arrayId = providerProducts.map(

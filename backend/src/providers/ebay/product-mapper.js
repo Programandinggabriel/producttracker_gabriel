@@ -35,7 +35,7 @@ function mapEbayProduct ( { item, category }) {
             item.description ||
             item.title ||
             "",
-        price: Number(item.price?.value || 0),
+        price: item.price?.value || 0,
         currency: item.price?.currency,
         images,
         url: item.itemWebUrl || "",

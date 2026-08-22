@@ -17,4 +17,10 @@ router.post("/favorites/product", auth ,controllers.createProductFavorite)
 router.get("/favorites/product", auth, controllers.getProductFavorite)
 router.delete("/favorites/product/:idProd", auth, controllers.deleteProductFavorite)
 
+//User Price alerts
+router.post("/alerts/price", auth, controllers.createPriceAlert)
+router.get("/alerts/price", auth, controllers.getPriceAlerts)
+router.put("/alerts/price/:idAlert", auth, controllers.updatePriceAlert)
+router.delete("/alerts/price/:idAlert", auth, controllers.deletePriceAlert)
+
 module.exports = router;

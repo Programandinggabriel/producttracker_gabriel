@@ -68,7 +68,7 @@ const createProductFavorite = async(req, res, next) => {
     
     const newProducFav = await  userService.createProductFavorite(idUser, provider, external_id);
     
-    res.json(newProducFav)
+    res.status(201).json(newProducFav)
   }catch(error){
     next(error)
   }
@@ -98,6 +98,83 @@ const deleteProductFavorite = async(req, res, next) => {
   }
 }
 
+//Price alerts
+const getPriceAlerts = async(req, res, next) => {
+  try{
+    const idUser = req.user.id;
+
+    const userAlerts = await userService.getPriceAlerts(idUser);
+
+    res.status(200).json(userAlerts)
+
+  }catch(error){
+    next(error)
+  }
+}
+
+const createPriceAlert = async(req, res, next) => {
+  try{
+    const idUser = req.user.id;
+    const { 
+      provider, 
+      external_id,
+      direction,
+      price_target
+    } = req.body;
+
+    const newAlert = await userService.createPriceAlert(
+      idUser,
+      provider,
+      external_id,
+      direction,
+      price_target
+    );
+
+    res.status(201).json(newAlert)
+
+  }catch(error){
+    next(error)
+  }
+}
+
+const updatePriceAlert = async(req, res, next) => {
+  try{
+    const idUser = req.user.id;
+    const { idAlert } = req.params;
+    const { 
+      direction,
+      price_target,
+      active
+    } = req.body;
+
+    const updatedAlert = await userService.updatePriceAlert(
+      idUser,
+      idAlert,
+      price_target,
+      direction,
+      active
+    )
+
+    res.status(200).json(updatedAlert)
+  }catch(error){
+    next(error)
+  }
+}
+
+const deletePriceAlert = async (req, res, next) => {
+  try{
+    const idUser = req.user.id;
+    const { idAlert } = req.params;
+    
+    const deleted = await userService.deletePriceAlert(
+      idUser, idAlert
+    )
+    
+    res.status(200).json({ message: `Price Alert with ID: ${idAlert} deleted` });
+  }catch(error){
+    next(error)
+  }
+}
 
 module.exports = {
     login,
@@ -108,5 +185,9 @@ module.exports = {
     resetPassword,
     createProductFavorite,
     getProductFavorite,
-    deleteProductFavorite
+    deleteProductFavorite,
+    getPriceAlerts,
+    createPriceAlert,
+    updatePriceAlert,
+    deletePriceAlert
 }

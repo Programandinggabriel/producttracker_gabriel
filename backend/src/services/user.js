@@ -2,9 +2,10 @@ const dbUser = require("../models/user");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { ThrowError } = require("../errors/AppError");
-const dbProvider = require('../models/provider')
 const dbProduct = require('../models/product')
-
+const dbProvider = require('../models/provider')
+const dbProductPriceAlert = require('../models/product-price-alerts')
+const utilsExternalProduct = require('./utils/external-products')
 
 require('dotenv').config();
 
@@ -142,6 +143,7 @@ const createProductFavorite = async (idUser, provider, idProduct) => {
         );
     }
 
+    const objProvider = resultProvider.provider;
     const providerName = resultProvider.provider.name;
 
     const existsProductFav = await dbUser.getDbUserProductFavorite(
@@ -161,62 +163,30 @@ const createProductFavorite = async (idUser, provider, idProduct) => {
         );
     }
 
-    const exists_external_product = await dbProduct.getExternalProduct(
-        providerName, 
+    const products = await objProvider.module.getProductsByIds([
         idProduct
-    );
+    ]);
 
-    let external_product;
-    
-    if(exists_external_product.rowCount){
-        const product = exists_external_product.product
-        const arrayImages = await dbProduct.getExternalProductImages(product.id);
+    const external_product = products.flat()[0];
 
-        external_product = {
-            ...product,
-            images: arrayImages.map(img => img.image)
-        }
-    }else{
-        const products = await resultProvider.provider.module.getProductsByIds([
-            idProduct
-        ]);
-
-        external_product = products.flat()[0];
-
-        if(!external_product){
-            throw new ThrowError(
-                "Incorrect Product ID", 
-                404,
-                "PRODUCT_NOT_FOUND",
-                {
-                    product: idProduct
-                }
-            );
-        }
-
-        const newProduct = await dbProduct.createExternalProduct(
-            external_product
+    if(!external_product){
+        throw new ThrowError(
+            "Incorrect Product ID", 
+            404,
+            "PRODUCT_NOT_FOUND",
+            {
+                product: idProduct
+            }
         );
+    }
 
-        if(Array.isArray(external_product.images)){
-            const promises = external_product.images.map((img, index) => 
-                dbProduct.createImageExternalProduct(
-                    newProduct.id,
-                    img,
-                    index
-                )
-            );
-            await Promise.all(promises)
-        }
-
-        external_product = {
-            ...external_product,
-            id: newProduct.id 
-        };
-    }   
+    const newProduct = await utilsExternalProduct.createExternalProduct(
+        providerName,
+        external_product
+    )
 
     const newProductFav = await dbUser.createDbFavorite(
-        external_product.id,
+        newProduct.id,
         idUser
     );
 
@@ -258,6 +228,261 @@ const deleteProductFavorite = async (idUser, idProd) => {
     return deleted
 }
 
+//Price alerts
+const getPriceAlerts = async (
+    idUser
+) => {
+    const userAlerts = await dbProductPriceAlert.getUserPriceAlerts(
+        idUser
+    )
+    const productAlerts = await Promise.all(
+        userAlerts.map(async (uAlert) => {
+            const product = await dbProduct.getExternalProductById(
+                uAlert.product_id
+            );
+
+            return {
+                alert: {
+                    ...uAlert,
+                    product: product
+                }
+            }
+        })
+    );
+
+    return productAlerts
+}
+
+const createPriceAlert = async (
+    idUser, 
+    provider, 
+    idProduct,
+    direction,
+    priceTarget
+) => {
+    if(!provider || !idProduct || !direction || !priceTarget){
+        throw new ThrowError(
+            "Missing required fields: provider, external_id, direction, price_target", 
+            400, 
+            "BAD_REQUEST"
+        );
+    }
+    
+    const target = Number(priceTarget);
+
+    if(!Number.isFinite(target) || 
+        target <= 0 || 
+        !/^\d+(\.\d{1,2})?$/.test(String(priceTarget))
+    ){
+        throw new ThrowError(
+            "Invalid value in price_target", 
+            400, 
+            "BAD_REQUEST"
+        );
+    }
+
+
+    direction = direction.toUpperCase()
+
+    if(!dbProductPriceAlert.ALLOWED_DIRECTIONS.includes(direction)){
+        throw new ThrowError(
+            "Invalid direction",
+            400,
+            "BAD_REQUEST",
+            {
+                direction: direction
+            }
+        );
+    }
+
+    const resultProvider = await dbProvider.getProvider(provider);
+
+    if(resultProvider.rowCount === 0){
+        throw new ThrowError(
+            "Provider doesnt exist", 
+            404,
+            "PROVIDER_NOT_FOUND",
+            {
+                provider: provider
+            }
+        );
+    }
+
+    const objProvider = resultProvider.provider;
+    const providerName = resultProvider.provider.name;
+
+    const existsPriceAlert = 
+        await dbProductPriceAlert.getUserProductPriceAlert(
+            idUser,
+            direction,
+            providerName,
+            idProduct
+        );
+
+    if(existsPriceAlert){
+        throw new ThrowError(
+            "Price alert already exists", 
+            400,
+            "BAD_REQUEST",
+            {
+                alert: existsPriceAlert.id
+            }
+        );
+    }
+
+    const products = await objProvider.module.getProductsByIds([
+        idProduct
+    ]);
+
+    const external_product = products.flat()[0];
+
+    if(!external_product){
+        throw new ThrowError(
+            "Incorrect Product ID", 
+            404,
+            "PRODUCT_NOT_FOUND",
+            {
+                product: idProduct
+            }
+        );
+    }
+
+    const currentPrice = Number(external_product.price)
+
+    if(direction === 'INCREASE' && target < currentPrice){
+        throw new ThrowError(
+            "Incorrect price_target it must be less than the product price ", 
+            400,
+            "BAD_REQUEST",
+            {
+                direction: direction,
+                target: target,
+                current_price: currentPrice
+            }
+        );
+    }else if (direction === 'DECREASE' && target > currentPrice){
+        throw new ThrowError(
+            "Incorrect price_target it must be higher than the product price ", 
+            400,
+            "BAD_REQUEST",
+            {
+                direction: direction,
+                target: target,
+                current_price: external_product.price
+            }
+        );
+    }
+
+    const newProduct = await utilsExternalProduct.createExternalProduct(
+        providerName,
+        external_product
+    )
+
+    const newPriceAlert = await dbProductPriceAlert.createUserProductPriceAlert(
+        idUser,
+        newProduct.id,
+        priceTarget,
+        direction
+    )
+
+    return newPriceAlert;
+}
+
+const updatePriceAlert = async (
+    idUser,
+    idAlert,
+    priceTarget,
+    direction,
+    active
+) => {
+    if(!direction || !priceTarget || !active){
+        throw new ThrowError(
+            "Missing required fields: direction, price_target, active", 
+            400, 
+            "BAD_REQUEST"
+        );
+    }
+
+    const target = Number(priceTarget);
+
+    if(!Number.isFinite(target) || 
+        target <= 0 || 
+        !/^\d+(\.\d{1,2})?$/.test(String(priceTarget))
+    ){
+        throw new ThrowError(
+            "Invalid value in price_target", 
+            400, 
+            "BAD_REQUEST"
+        );
+    }
+
+
+    direction = direction.toUpperCase()
+
+    if(!dbProductPriceAlert.ALLOWED_DIRECTIONS.includes(direction)){
+        throw new ThrowError(
+            "Invalid direction",
+            400,
+            "BAD_REQUEST",
+            {
+                direction: direction
+            }
+        );
+    }
+
+    const existsAlert = dbProductPriceAlert.getUserPriceAlert(
+        idUser, 
+        idAlert
+    )
+
+    if(!existsAlert){
+        throw new ThrowError(
+            "Product price alert doesnt exist", 
+            404,
+            "ALERT_NOT_FOUND",
+            {
+                idAlert: idAlert 
+            }
+        );
+    }
+
+    const updatedAlert = dbProductPriceAlert.updateUserProductPriceAlert(
+        idUser,
+        idAlert,
+        priceTarget,
+        direction,
+        active
+    )
+
+    return updatedAlert
+}
+
+const deletePriceAlert = async (idUser, idAlert) => {
+    const existsAlert = dbProductPriceAlert.getUserPriceAlert(
+        idUser, 
+        idAlert
+    )
+
+    if(!existsAlert){
+        throw new ThrowError(
+            "Product price alert doesnt exist", 
+            404,
+            "ALERT_NOT_FOUND",
+            {
+                idAlert: idAlert 
+            }
+        );
+    }
+
+    const alertDeleted = dbProductPriceAlert.deleteUserProductPriceAlert(
+        idUser,
+        idAlert
+    )
+
+    return alertDeleted;
+    
+}
+
 module.exports = {
     login,
     getUser,
@@ -267,5 +492,9 @@ module.exports = {
     resetPassword,
     createProductFavorite,
     getProductFavorite,
-    deleteProductFavorite
+    deleteProductFavorite,
+    getPriceAlerts,
+    createPriceAlert,
+    updatePriceAlert,
+    deletePriceAlert
 }

@@ -34,6 +34,7 @@ Está pensado para evolucionar hacia una capa de **providers** que desacople el 
 * [ ] Capa de Providers
 * [ ] Gestión de productos (CRUD)
 * [ ] Validaciones y manejo de errores
+* [ ] Auth refresh token
 * [ ] Tests
 * [ ] Despliegue
 

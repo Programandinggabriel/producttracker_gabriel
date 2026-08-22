@@ -17,6 +17,20 @@ const getDbUsers = async () => {
     return rows;
 };
 
+const findUserById = async (id) => {
+    const query = `SELECT id,
+                          name,
+                          email,
+                          username
+                   FROM users
+                   WHERE id = $1`;
+    const values = [id];
+
+    const { rows } = await pool.query(query, values);
+
+    return rows[0];
+};
+
 const findUserByUsername = async (username) => {
     const query = 'SELECT * FROM users WHERE username = $1';
     const values = [username];
@@ -143,9 +157,10 @@ const deleteDbFavorite = async (idUser, idProd) => {
 }
 
 module.exports = {
+    getDbUsers,
+    findUserById,
     findUserByUsername,
     findUserByEmail,
-    getDbUsers,
     createDbUser,
     updateDbUser,
     deleteDbUser,

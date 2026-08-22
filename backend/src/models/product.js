@@ -1,5 +1,8 @@
 const { pool } = require('../config/db')
 
+const ALLOWED_SORTBY = ['id', 'title', 'price', 'created'];
+const ALLOWED_ORDER = ['ASC', 'DESC'];
+
 class Product {
     constructor({
         productId,
@@ -54,11 +57,8 @@ const getProducts = async (
 
   let query = `SELECT * FROM products`;
 
-  const allowedSortBy = ['id', 'title', 'price', 'created'];
-  const allowedOrder = ['ASC', 'DESC'];
-
-  if (sortBy && allowedSortBy.includes(sortBy)) {
-    const safeOrder = allowedOrder.includes(order?.toUpperCase())
+  if (sortBy && ALLOWED_SORTBY.includes(sortBy)) {
+    const safeOrder = ALLOWED_ORDER.includes(order?.toUpperCase())
       ? order.toUpperCase()
       : 'ASC';
 
@@ -167,6 +167,16 @@ const getProductImages = async (id) => {
 
 //External Products
 
+const getExternalProductById = async (id) => {
+     const query = `SELECT * FROM external_products 
+                     WHERE id = $1`;
+    const values = [id]
+
+    const { rows } = await pool.query(query, values)
+
+    return rows[0]
+}
+
 const getExternalProduct = async (idProv, idProd) => {
      const query = `SELECT * FROM external_products 
                      WHERE product_id = $1
@@ -269,6 +279,8 @@ const createImageExternalProduct = async (id, urlImage, position) => {
 
 
 module.exports = {
+    ALLOWED_ORDER,
+    ALLOWED_SORTBY,
     Product,
     getProduct,
     getProducts,
@@ -277,6 +289,7 @@ module.exports = {
     providerUpdateProduct,
     createImageProduct,
     getProductImages,
+    getExternalProductById,
     getExternalProduct,
     getLastExternalProductsNotUpdated,
     createExternalProduct,

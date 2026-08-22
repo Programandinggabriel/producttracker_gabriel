@@ -1,7 +1,4 @@
-const dbProvider = require("../models/provider");
 const dbProduct = require('../models/product');
-const dbCategory = require('../models/category');
-const redisCache = require('../redis/product');
 
 const productCacheService = require('./cache/product-cache');
 const { ThrowError } = require("../errors/AppError");
@@ -13,16 +10,13 @@ const getProducts = async (
     sortBy,
     order
 ) => {
-    const allowedSort = ['id', 'title', 'price', 'created'];
-    const allowedOrder = ['ASC', 'DESC'];
-    
-    if(!allowedSort.includes(sortBy)){
+    if(!dbProduct.ALLOWED_SORTBY.includes(sortBy)){
         throw new ThrowError(
             'Ordenamiento incorrecto',
             400,
             'BAD_REQUEST'
         )
-    }else if(!allowedOrder.includes(order.toUpperCase())){
+    }else if(!dbProduct.ALLOWED_ORDER.includes(order.toUpperCase())){
         throw new ThrowError(
             'Orden incorrecto',
             400,
@@ -58,17 +52,14 @@ const getQueryProducts = async (
     offset,
     sortBy,
     order
-) => {
-    const allowedSort = ['id', 'title', 'price', 'created'];
-    const allowedOrder = ['ASC', 'DESC'];
-    
-    if(!allowedSort.includes(sortBy)){
+) => {    
+    if(!dbProduct.ALLOWED_SORTBY.includes(sortBy)){
         throw new ThrowError(
             'Ordenamiento incorrecto',
             400,
             'BAD_REQUEST'
         )
-    }else if(!allowedOrder.includes(order.toUpperCase())){
+    }else if(!dbProduct.ALLOWED_ORDER.includes(order.toUpperCase())){
         throw new ThrowError(
             'Orden incorrecto',
             400,
@@ -136,17 +127,14 @@ const getProductsByCategory = async (
     offset, 
     sortBy, 
     order
-) => {
-    const allowedSort = ['id', 'title', 'price', 'created'];
-    const allowedOrder = ['ASC', 'DESC'];
-    
-    if(!allowedSort.includes(sortBy)){
+) => {    
+    if(!dbProduct.ALLOWED_SORTBY.includes(sortBy)){
         throw new ThrowError(
             'Ordenamiento incorrecto',
             400,
             'BAD_REQUEST'
         )
-    }else if(!allowedOrder.includes(order.toUpperCase())){
+    }else if(!dbProduct.ALLOWED_ORDER.includes(order.toUpperCase())){
         throw new ThrowError(
             'Orden incorrecto',
             400,

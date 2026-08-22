@@ -15,32 +15,19 @@ const getProductPriceHistoryById = async(id) => {
     return rows[0]
 }
 
-const getProductPriceHistoryByPrices = async(
-    idProduct,
-    direction,
-    oldPrice,
-    newPrice
-) => {
+const getProductPriceHistoryByProductId = async(id) => {
     const query = `SELECT id,
                           product_id,
                           direction,
                           old_price,
                           new_price
                     FROM products_price_history
-                    WHERE product_id = $1 
-                      AND direction = $2
-                      AND old_price = $3
-                      AND new_price = $4`;
-    const values = [
-        idProduct,
-        direction,
-        oldPrice,
-        newPrice
-    ];
+                    WHERE product_id = $1`;
+    const values = [id];
 
     const { rows } = await pool.query(query, values);
 
-    return rows[0]
+    return rows
 }
 
 
@@ -80,6 +67,6 @@ const createProductPriceHistory = async (
 
 module.exports = {
     getProductPriceHistoryById,
-    getProductPriceHistoryByPrices,
+    getProductPriceHistoryByProductId,
     createProductPriceHistory
 }

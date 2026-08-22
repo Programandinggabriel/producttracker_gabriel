@@ -1,46 +1,48 @@
 const emailPriceAlertTemplate = (user, data) => {
     const rows = data.map(({ alert, product, history = []}) => {
-        const lastChange = history.at(-1);
+        const historyChangesRows = history.map(item => {
+          const oldPrice = Number(item.old_price);
+          const newPrice = Number(item.new_price);
+          const difference = newPrice - oldPrice;
+          const percentage = oldPrice
+              ? ((Math.abs(difference) / oldPrice) * 100).toFixed(2)
+              : '0.00';
+          
+          const decrease = difference < 0;
+          const color = decrease ? '#16a34a' : '#dc2626';
 
-        const oldPrice = lastChange.old_price;
-        const newPrice = lastChange.new_price;
-        const difference = Number(newPrice) - Number(oldPrice);
-        const percentage = Number(oldPrice)
-            ? ((Math.abs(difference) / oldPrice) * 100).toFixed(2)
-            : '0.00';
-        
-        const decrease = difference < 0;
-        const color = decrease ? '#16a34a' : '#dc2626';
+          return `
+            <tr>
+              <td style="padding:12px;border-bottom:1px solid #eee;">
+                  <strong>${product.title}</strong>
+              </td>
 
-        return ` 
-        <tr>
-            <td style="padding:12px;border-bottom:1px solid #eee;">
-                <strong>${product.title}</strong>
-            </td>
+              <td style="padding:12px;border-bottom:1px solid #eee;">
+                  ${product.currency} ${item.old_price}
+              </td>
 
-            <td style="padding:12px;border-bottom:1px solid #eee;">
-                ${product.currency} ${oldPrice}
-            </td>
+              <td style="padding:12px;border-bottom:1px solid #eee;">
+                  <strong>${product.currency} ${item.new_price}</strong>
+              </td>
 
-            <td style="padding:12px;border-bottom:1px solid #eee;">
-                <strong>${product.currency} ${newPrice}</strong>
-            </td>
+              <td style="
+                  padding:12px;
+                  border-bottom:1px solid #eee;
+                  color:${color};
+                  font-weight:bold;
+              ">
+                  ${decrease ? '↓' : '↑'}
+                  ${decrease ? '-' : '+'}${percentage}%
+              </td>
 
-            <td style="
-                padding:12px;
-                border-bottom:1px solid #eee;
-                color:${color};
-                font-weight:bold;
-            ">
-                ${decrease ? '↓' : '↑'}
-                ${decrease ? '-' : '+'}${percentage}%
-            </td>
-
-            <td style="padding:12px;border-bottom:1px solid #eee;">
-                ${product.currency} ${alert.target_price}
-            </td>
-        </tr>`
-    }).join('');
+              <td style="padding:12px;border-bottom:1px solid #eee;">
+                  ${product.currency} ${alert.target_price}
+              </td>
+            </tr>`
+        }).join('');
+      
+      return historyChangesRows;
+    });
 
       return `
     <div style="

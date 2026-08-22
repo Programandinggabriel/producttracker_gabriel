@@ -200,7 +200,6 @@ const getLastExternalProductsNotClaimed = async(limit = 5) => {
                     currency,
                     price_change_claimed_at
                 FROM external_products
-                WHERE id != '8a9e63b368'
                 ORDER BY price_change_claimed_at ASC NULLS FIRST
                 LIMIT $1`;
         
@@ -211,19 +210,16 @@ const getLastExternalProductsNotClaimed = async(limit = 5) => {
     return rows
 }
 
-const getLastExternalProductsNotUpdated = async(providerName, limit = 5) => {
+const getExternalProductsPriceChangeClaimedAt = async(providerName) => {
     //Mas antiguos primero
-    const query = `SELECT
-                    id,
-                    provider_id,
-                    product_id,
-                    provider_updated_at
-                FROM external_products
-                WHERE provider_id = $1
-                ORDER BY provider_updated_at ASC NULLS FIRST
-                LIMIT $2`;
+    const query = `SELECT id,
+                          provider_id,
+                          product_id
+                    FROM external_products
+                   WHERE price_change_claimed_at > provider_updated_at
+                     AND provider_id = $1`;
         
-    const values = [providerName, limit];
+    const values = [providerName];
 
     const { rows } = await pool.query(query, values)
 
@@ -324,7 +320,7 @@ module.exports = {
     getExternalProductById,
     getExternalProduct,
     getLastExternalProductsNotClaimed,
-    getLastExternalProductsNotUpdated,
+    getExternalProductsPriceChangeClaimedAt,
     createExternalProduct,
     updateExternalProductPriceChangeClaimedAt,
     providerUpdateExternalProduct,

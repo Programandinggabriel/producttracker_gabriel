@@ -21,18 +21,27 @@ const getPriceChanges = async () => {
             const newPrice = Number(product2.price);
             
             let changeDirection;
+            let changeDiff;
+            let changePercentage;
             if(Number.isFinite(currentPrice) && Number.isFinite(newPrice)){
-                if(currentPrice < newPrice){
-                    changeDirection = 'INCREASE'
-                }else if(currentPrice > newPrice){
-                    changeDirection = 'DECREASE'
+                if(currentPrice !== newPrice){
+                    if(currentPrice < newPrice){
+                        changeDirection = 'INCREASE'
+                    }else if(currentPrice > newPrice){
+                        changeDirection = 'DECREASE'
+                    }
+
+                    changeDiff = (newPrice - currentPrice).toFixed(2)
+                    changePercentage = ((Math.abs(changeDiff) / currentPrice) * 100).toFixed(2)
                 }
             }
 
             return {
                 productId: product.id,
-                direction: changeDirection,
                 hasChange: changeDirection ? true : false,
+                direction: changeDirection,
+                difference: changeDiff,
+                percentage: changePercentage,
                 oldPrice: product1.price,
                 newPrice: product2.price
             }
@@ -47,12 +56,16 @@ const getPriceChanges = async () => {
 const saveHistoryPriceChange = async (
     idProduct, 
     direction,
+    difference,
+    percentage,
     oldPrice, 
     newPrice
 ) => {
     const newHistory = await dbProductPriceHistory.createProductPriceHistory(
         idProduct,
         direction,
+        difference,
+        percentage,
         oldPrice, 
         newPrice
     );
@@ -69,6 +82,8 @@ const main = async () => {
                 const newHistory = await saveHistoryPriceChange(
                     change.productId,
                     change.direction,
+                    change.difference,
+                    change.percentage,
                     change.oldPrice,
                     change.newPrice
                 );

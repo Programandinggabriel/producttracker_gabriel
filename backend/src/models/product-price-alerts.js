@@ -45,7 +45,7 @@ const getProductPriceAlertById = async (id) => {
 }
 
 const getUserProductPriceAlert = async (idUser, alertDirection ,provider, idProd) => {
-    const query = `SELECT alerts.*
+    const query = `SELECT alerts.id
                     FROM products_price_alerts alerts
                     JOIN external_products eprods
                       ON alerts.product_id = eprods.id
@@ -61,7 +61,13 @@ const getUserProductPriceAlert = async (idUser, alertDirection ,provider, idProd
 }
 
 const getUserPriceAlerts = async (idUser) => {
-    const query = `SELECT * 
+    const query = `SELECT id,
+                          product_id,
+                          target_price,
+                          direction,
+                          active,
+                          created,
+                          updated
                     FROM products_price_alerts
                    WHERE user_id = $1`;
     const values = [idUser];
@@ -72,7 +78,7 @@ const getUserPriceAlerts = async (idUser) => {
 }
 
 const getUserPriceAlert = async(idUser, idAlert) => {
-    const query = `SELECT * 
+    const query = `SELECT id 
                     FROM products_price_alerts
                    WHERE user_id = $1
                      AND id = $2`;

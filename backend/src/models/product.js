@@ -33,7 +33,8 @@ class Product {
 
 //Products
 const getProduct = async (idProd, idProv) => {
-    const query = `SELECT * FROM products 
+    const query = `SELECT id
+                    FROM products
                    WHERE product_id = $1
                      AND provider_id = $2`;
     const values = [idProd, idProv]
@@ -53,9 +54,17 @@ const getProducts = async (
   order,
 ) => {
   const params = [];
-  const conditions = [];
 
-  let query = `SELECT * FROM products`;
+  let query = `SELECT id,
+                      provider_id,
+                      product_id,
+                      title,
+                      description,
+                      price,
+                      currency,
+                      url,
+                      stock
+                FROM products`;
 
   if (sortBy && ALLOWED_SORTBY.includes(sortBy)) {
     const safeOrder = ALLOWED_ORDER.includes(order?.toUpperCase())
@@ -167,8 +176,17 @@ const getProductImages = async (id) => {
 
 //External Products
 const getExternalProductById = async (id) => {
-     const query = `SELECT * FROM external_products 
-                     WHERE id = $1`;
+     const query = `SELECT id,
+                           provider_id,
+                           product_id,
+                           title,
+                           description,
+                           price,
+                           currency,
+                           url,
+                           stock               
+                      FROM external_products 
+                    WHERE id = $1`;
     const values = [id]
 
     const { rows } = await pool.query(query, values)
@@ -177,9 +195,18 @@ const getExternalProductById = async (id) => {
 }
 
 const getExternalProduct = async (idProv, idProd) => {
-     const query = `SELECT * FROM external_products 
-                     WHERE product_id = $1
-                       AND provider_id = $2`;
+     const query = `SELECT id,
+                           provider_id,
+                           product_id,
+                           title,
+                           description,
+                           price,
+                           currency,
+                           url,
+                           stock               
+                     FROM external_products 
+                    WHERE product_id = $1
+                      AND provider_id = $2`;
     const values = [idProd, idProv]
 
     const { rows, rowCount } = await pool.query(query, values)

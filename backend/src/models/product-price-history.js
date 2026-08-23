@@ -1,9 +1,16 @@
 const { pool } = require('../config/db')
 
+const ALLOWED_DIRECTIONS = [
+    'INCREASE',
+    'DECREASE'
+];
+
 const getProductPriceHistoryById = async(id) => {
     const query = `SELECT id,
                           product_id,
                           direction,
+                          difference,
+                          percentage,
                           old_price,
                           new_price
                     FROM products_price_history
@@ -34,6 +41,8 @@ const getProductPriceHistoryByProductId = async(id) => {
 const createProductPriceHistory = async (
     idProduct, 
     direction,
+    difference,
+    percentage,
     oldPrice, 
     newPrice
 ) => {
@@ -45,10 +54,12 @@ const createProductPriceHistory = async (
             id,
             product_id,
             direction,
+            difference,
+            percentage,
             old_price, 
             new_price
         )
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
     `;
 
@@ -56,6 +67,8 @@ const createProductPriceHistory = async (
         historyId, 
         idProduct,
         direction,
+        difference,
+        percentage,
         oldPrice, 
         newPrice
     ];

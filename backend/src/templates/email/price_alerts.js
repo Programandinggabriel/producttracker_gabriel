@@ -1,16 +1,9 @@
 const emailPriceAlertTemplate = (user, data) => {
     const rows = data.map(({ alert, product, history = []}) => {
         const historyChangesRows = history.map(item => {
-          const oldPrice = Number(item.old_price);
-          const newPrice = Number(item.new_price);
-          const difference = newPrice - oldPrice;
-          const percentage = oldPrice
-              ? ((Math.abs(difference) / oldPrice) * 100).toFixed(2)
-              : '0.00';
+          const decrease = item.direction === 'DECREASE';
+          const color = decrease ? '#dc2626' : '#16a34a';
           
-          const decrease = difference < 0;
-          const color = decrease ? '#16a34a' : '#dc2626';
-
           return `
             <tr>
               <td style="padding:12px;border-bottom:1px solid #eee;">
@@ -32,7 +25,7 @@ const emailPriceAlertTemplate = (user, data) => {
                   font-weight:bold;
               ">
                   ${decrease ? '↓' : '↑'}
-                  ${decrease ? '-' : '+'}${percentage}%
+                  ${decrease ? '-' : '+'}${item.percentage}%
               </td>
 
               <td style="padding:12px;border-bottom:1px solid #eee;">

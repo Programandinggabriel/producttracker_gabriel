@@ -55,6 +55,7 @@ Cada carpeta cuenta con su propio README con detalles específicos:
 * [ ] Desarrollo del frontend con React
 * [ ] Caché y optimización
 * [ ] Validaciones y manejo de errores
+* [ ] Auth refresh token
 * [ ] Tests
 * [ ] Despliegue
 

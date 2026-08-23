@@ -32,7 +32,11 @@ const findUserById = async (id) => {
 };
 
 const findUserByUsername = async (username) => {
-    const query = 'SELECT * FROM users WHERE username = $1';
+    const query = `SELECT id,
+                          username,
+                          password
+                    FROM users 
+                   WHERE username = $1`;
     const values = [username];
 
     const { rows } = await pool.query(query, values);
@@ -40,7 +44,10 @@ const findUserByUsername = async (username) => {
 }
 
 const findUserByEmail = async (email) => {
-    const query = 'SELECT * FROM users WHERE email = $1'
+    const query = `SELECT id, 
+                          email 
+                    FROM users
+                   WHERE email = $1`
     const values = [email]
 
     const { rows } = await pool.query(query, values);
@@ -106,7 +113,8 @@ const createDbFavorite = async(idProduct, idUser) => {
 }
 
 const getDbFavorite = async (idUser, idProduct) => {
-    const query = `SELECT *
+    const query = `SELECT user_id,
+                          product_id
                     FROM users_product_favorite
                    WHERE user_id = $1
                      AND product_id = $2`;
@@ -118,7 +126,7 @@ const getDbFavorite = async (idUser, idProduct) => {
 }
 
 const getDbUserProductFavorite = async(idUser, provider, externalIdProduct) => {
-    const query = `SELECT eprods.*
+    const query = `SELECT eprods.id
                     FROM users_product_favorite ufav
                    JOIN external_products eprods
                      ON ufav.product_id = eprods.id
@@ -133,7 +141,15 @@ const getDbUserProductFavorite = async(idUser, provider, externalIdProduct) => {
 }
 
 const getDbUserProductsFavorites = async (idUser) => {
-    const query = `SELECT eprods.*
+    const query = `SELECT eprods.id,
+                          eprods.provider_id,
+                          eprods.product_id,
+                          eprods.title,
+                          eprods.description,
+                          eprods.price,
+                          eprods.currency,
+                          eprods.url,
+                          eprods.stock
                     FROM users_product_favorite ufav
                    JOIN external_products eprods
                      ON ufav.product_id = eprods.id

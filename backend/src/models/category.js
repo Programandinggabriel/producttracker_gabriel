@@ -1,7 +1,10 @@
 const { pool } = require('../config/db');
 
 const getCategories = async () => {
-    const query = 'SELECT * FROM category';
+    const query = `SELECT id,
+                          name,
+                          slug
+                   FROM category`;
     const { rows } = await pool.query(query)
 
     return rows;

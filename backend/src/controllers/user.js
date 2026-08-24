@@ -69,6 +69,52 @@ const resetPassword = async (req, res, next) => {
     }
 };
 
+//User profile
+const getUserProfile = async (req, res, next) => {
+  try{
+    const { id } = req.user;
+    const profile = await userService.getUserProfile(id);
+    res.status(200).json(profile)
+  }catch(error){
+    next(error);
+  }
+}
+
+const updateProfile = async (req, res, next) => {
+    try {
+    const { id } = req.user;
+    const { name, email, username} = req.body;
+
+    const updatedUser = await userService.updateUserProfile(
+      id, 
+      name, 
+      email, 
+      username
+    );
+    
+    res.json(updatedUser);
+  } catch (error) {
+    next(error)
+  }
+}
+
+const changePassword = async(req, res, next) => {
+  try{
+    const { id } = req.user;
+    const { current_password, new_password } = req.body;
+
+    const changed = await userService.changePassword(
+      id,
+      current_password,
+      new_password
+    );
+
+    res.status(200).json({ message: `Password changed success` });
+  }catch(error){
+    next(error);
+  }
+}
+
 //Favorites
 const createProductFavorite = async(req, res, next) => {
   try{
@@ -192,6 +238,9 @@ module.exports = {
     updateUser,
     deleteUser,
     resetPassword,
+    getUserProfile,
+    updateProfile,
+    changePassword,
     createProductFavorite,
     getProductFavorite,
     deleteProductFavorite,

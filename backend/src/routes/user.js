@@ -42,6 +42,26 @@ router.patch(
     controllers.resetPassword
 );
 
+//User profile
+router.get(
+    "/profile",
+    auth,
+    controllers.getUserProfile
+)
+
+router.post(
+    "/profile",
+    auth,
+    controllers.updateProfile
+)
+
+router.patch(
+    "/profile/change-password",
+    auth,
+    controllers.changePassword
+)
+
+
 //Product favorites
 router.post(
     "/favorites/product", 

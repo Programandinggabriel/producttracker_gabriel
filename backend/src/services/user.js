@@ -13,7 +13,8 @@ require('dotenv').config();
 const login = async (username, password) => {
     // Implement login logic here
     const user = await dbUser.findUserByUsername(username);
-    
+    const userHashPass = await dbUser.getUserPassword(user.id)
+
     if (!user) {
         throw new ThrowError(
             "User not found", 
@@ -25,7 +26,7 @@ const login = async (username, password) => {
         )
     }
 
-    const isPassordValid = await bcrypt.compare(password, user.password);
+    const isPassordValid = await bcrypt.compare(password, userHashPass.password);
     if (!isPassordValid) {
         throw new ThrowError(
             'Invalid credentials', 
@@ -252,10 +253,77 @@ const resetPassword = async (email, newPassword) => {
         )
     }
 
-    const resetUserPassword = await dbUser.resetDbUserPassword(email, newPassword);
+    const resetUserPassword = await dbUser.resetDbUserPassword(user.id, newPassword);
    
     return resetUserPassword;
 }
+
+//User profile
+const getUserProfile = async(currentUser) => {
+    const profile = dbUser.findUserById(currentUser);
+
+    return profile;
+}
+
+const updateUserProfile = async (
+    currentUser, 
+    name,
+    email,
+    username
+) => {
+    if (!name || !email || !username) {
+        throw new ThrowError(
+            "Missing required fields: name, email, username", 
+            400, 
+            "BAD_REQUEST"
+        );
+    }
+
+    let updatedUser;
+    try{
+        updatedUser = await dbUser.updateDbUser(
+            currentUser,
+            name,
+            email,
+            username
+        );
+    }catch(error){
+        if(error.constraint === 'users_username_key'){
+            throw new ThrowError(
+                "Username already exists", 
+                400,
+                "BAD_REQUEST",
+                {
+                    username: username
+                }
+            );
+        }
+    }
+
+    return updatedUser;
+}
+
+const changePassword = async (
+    currentUser,
+    oldPassword,
+    newPassword
+) => {
+    const hashUserPass = await dbUser.getUserPassword(currentUser);
+    const isPasswordValid = await bcrypt.compare(oldPassword, hashUserPass.password);
+
+    if(!isPasswordValid){
+        throw new ThrowError(
+            'Current password is incorrect', 
+            400,
+            'UNAUTHORIZED'
+        )
+    }
+
+    const updatedPassword = dbUser.changeDbUserPassword(currentUser, newPassword);
+
+    return true
+}
+
 
 //Favorites
 const createProductFavorite = async (idUser, provider, idProduct) => {
@@ -627,6 +695,9 @@ module.exports = {
     updateUser,
     deleteUser,
     resetPassword,
+    getUserProfile,
+    updateUserProfile,
+    changePassword,
     createProductFavorite,
     getProductFavorite,
     deleteProductFavorite,

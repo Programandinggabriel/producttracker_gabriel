@@ -17,6 +17,17 @@ const getDbUsers = async () => {
     return rows;
 };
 
+const getUserPassword = async(userId) => {
+    const query = `SELECT password
+                   FROM users
+                   WHERE id = $1`;
+    const values = [userId];
+
+    const { rows } = await pool.query(query, values);
+
+    return rows[0];
+}
+
 const findUserById = async (id) => {
     const query = `SELECT id,
                           name,
@@ -33,8 +44,7 @@ const findUserById = async (id) => {
 
 const findUserByUsername = async (username) => {
     const query = `SELECT id,
-                          username,
-                          password
+                          username
                     FROM users 
                    WHERE username = $1`;
     const values = [username];
@@ -94,16 +104,28 @@ const deleteDbUser = async (id) => {
     return result.rowCount > 0;
 }
 
-const resetDbUserPassword = async (email, newPassword) => {
+const resetDbUserPassword = async (id, newPassword) => {
     const hashedPassword = await hashPassword(newPassword);
     const query = `UPDATE users
                     SET password = $1
-                    WHERE email = $2
+                    WHERE id = $2
                     RETURNING *`;
-    const values = [hashedPassword, email];
+    const values = [hashedPassword, id];
     const { rows } = await pool.query(query, values);
     return rows[0];
 }
+
+const changeDbUserPassword = async (id, newPassword) => {
+    const hashedPassword = await hashPassword(newPassword);
+    const query = `UPDATE users
+                    SET password = $1
+                    WHERE id = $2
+                    RETURNING *`;
+    const values = [hashedPassword, id];
+    const { rows } = await pool.query(query, values);
+    return rows[0];
+}
+
 
 //Roles
 const getUserRoles = async (idUser) => {
@@ -214,6 +236,7 @@ const deleteDbFavorite = async (idUser, idProd) => {
 
 module.exports = {
     getDbUsers,
+    getUserPassword,
     findUserById,
     findUserByUsername,
     findUserByEmail,
@@ -221,6 +244,7 @@ module.exports = {
     updateDbUser,
     deleteDbUser,
     resetDbUserPassword,
+    changeDbUserPassword,
     getUserRoles,
     assingUserRole,
     deleteUserRole,

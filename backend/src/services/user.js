@@ -1,11 +1,12 @@
-const dbUser = require("../models/user");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { ThrowError } = require("../errors/AppError");
-const dbProduct = require('../models/product')
-const dbProvider = require('../models/provider')
-const dbProductPriceAlert = require('../models/product-price-alerts')
-const utilsExternalProduct = require('./utils/external-products')
+const dbUser = require("../models/user");
+const dbRole = require('../models/role');
+const dbProduct = require('../models/product');
+const dbProvider = require('../models/provider');
+const dbProductPriceAlert = require('../models/product-price-alerts');
+const utilsExternalProduct = require('./utils/external-products');
 
 require('dotenv').config();
 
@@ -33,11 +34,23 @@ const login = async (username, password) => {
         )
     }
 
-    // Generate a token or session for the user (this is just a placeholder)
+    const userRoles = await dbUser.getUserRoles(user.id);
+    const permissions = await Promise.all(
+        userRoles.map(async(role) => {
+            const rolePermissions = await dbRole.getRolePermissions(role.role_id);
+            
+            return {
+                ...role,
+                permissions: rolePermissions
+            }
+        })
+    )
+
     const token = jwt.sign(
         {
             id: user.id, 
-            username: user.username
+            username: user.username,
+            role_permissions: permissions.flat()
         }, 
         process.env.JWT_SECRET, 
         {
@@ -50,7 +63,24 @@ const login = async (username, password) => {
 
 const getUser = async () => {
     const users = await dbUser.getDbUsers();
-    return users;
+    
+    const userWithRoles = await Promise.all(
+        users.map(async(user) => {
+            const roles = await dbUser.getUserRoles(user.id);
+
+            return {
+                ...user,
+                roles: roles.map(role => {
+                    return {
+                        role_id: role.role_id,
+                        role_name: role.name
+                    }
+                })
+            }
+        })
+    );
+
+    return userWithRoles.flat();
 }
 
 const createUser = async (user) => {
@@ -63,19 +93,126 @@ const createUser = async (user) => {
     }
 
     const newUser = await dbUser.createDbUser(user);
+    const roleViewer = await dbRole.getRoleByName('viewer');
+
+    await dbUser.assingUserRole(
+        roleViewer.id,
+        newUser.id
+    )
+
+    newUser.roles = [
+        {
+            role_id: roleViewer.id,
+            role_name: roleViewer.name
+        }
+    ]
+
     return newUser;
 }
 
-const updateUser = async (id, user) => {
-    if (!user.name || !user.email || !user.username) {
+const updateUser = async (
+    id, 
+    name,
+    email,
+    username,
+    roles
+) => {
+    if (!name || !email || !username) {
         throw new ThrowError(
             "Missing required fields: name, email, username", 
             400, 
             "BAD_REQUEST"
         );
     }
-    
-    const updatedUser = await dbUser.updateDbUser(id, user);
+
+    const existsUser = await dbUser.findUserById(id)
+
+    if(!existsUser){
+       throw new ThrowError(
+            "User dont exists", 
+            400,
+            "BAD_REQUEST",
+            {
+                id: id
+            }
+        ); 
+    }
+
+    let updatedUser;
+    try{
+        updatedUser = await dbUser.updateDbUser(
+            id,
+            name,
+            email,
+            username
+        );
+    }catch(error){
+        if(error.constraint === 'users_username_key'){
+            throw new ThrowError(
+                "Username already exists", 
+                400,
+                "BAD_REQUEST",
+                {
+                    username: username
+                }
+            );
+        }
+    }
+
+    let userRoles = await dbUser.getUserRoles(id);
+
+    if(roles){
+        const setCurrUsrRoles = new Set(userRoles.map(item => item.role_id));
+
+        const valueString = roles.replace(/[\[\]]/g, '');
+        const setRoles =  valueString === '' 
+            ? new Set()
+            : new Set(valueString.split(',').map(item => item.trim()));
+
+        const rolesToadd = setRoles.difference(setCurrUsrRoles);
+        const rolesToRemove = setCurrUsrRoles.difference(setRoles); 
+        
+        for(const role of rolesToadd){
+            const existRole = await dbRole.getRoleById(role);
+            
+            if(!existRole){
+                throw new ThrowError(
+                    `Role by id ${role} not exists`, 
+                    400,
+                    "BAD_REQUEST",
+                    {
+                        id: role
+                    }
+                );
+            }
+           
+            if(userRoles.map(item => item).includes(role)){
+                continue;
+            }
+
+            const newUserRole = await dbUser.assingUserRole(
+                role,
+                id
+            );
+        }
+
+        for(const role of rolesToRemove){
+            const deleted = await dbUser.deleteUserRole(
+                role,
+                id
+            );
+        }
+    }
+
+    userRoles = await dbUser.getUserRoles(id);
+
+    updatedUser.roles = userRoles.map((item) => {
+        return {
+            role_id: item.role_id,
+            role_name: item.name
+        }
+    });
+
     return updatedUser;
 }
 

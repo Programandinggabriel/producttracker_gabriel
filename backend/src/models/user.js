@@ -70,8 +70,12 @@ const createDbUser = async (user) => {
     return rows[0];
 }
 
-const updateDbUser = async (id, user) => {
-    const { name, email, username } = user;
+const updateDbUser = async (
+    id, 
+    name,
+    email,
+    username
+) => {
     const query = `UPDATE users 
                     SET name = $1, email = $2, username = $3
                     WHERE id = $4 
@@ -99,6 +103,42 @@ const resetDbUserPassword = async (email, newPassword) => {
     const values = [hashedPassword, email];
     const { rows } = await pool.query(query, values);
     return rows[0];
+}
+
+//Roles
+const getUserRoles = async (idUser) => {
+    const query = `SELECT users_roles.role_id,
+                          roles.name
+                    FROM users_roles
+                    JOIN roles 
+                      ON users_roles.role_id = roles.id
+                   WHERE user_id = $1`;
+    const values = [idUser];
+
+    const { rows } = await pool.query(query, values);
+
+    return rows
+}
+
+const assingUserRole = async (idRole, idUser) => {
+    const query = `INSERT INTO users_roles (user_id, role_id)
+                   VALUES ($1, $2) RETURNING *`;
+    const values = [idUser, idRole];
+
+    const { rows } = await pool.query(query, values);
+
+    return rows[0];
+}
+
+const deleteUserRole = async(idRole, idUser) => {
+    const query = `DELETE FROM users_roles
+                   WHERE user_id = $1
+                     AND role_id = $2`;
+    const values = [idUser, idRole];
+
+    const { rowCount } = await pool.query(query, values);
+
+    return  rowCount > 0
 }
 
 //Favorites
@@ -181,6 +221,9 @@ module.exports = {
     updateDbUser,
     deleteDbUser,
     resetDbUserPassword,
+    getUserRoles,
+    assingUserRole,
+    deleteUserRole,
     createDbFavorite,
     getDbFavorite,
     getDbUserProductFavorite,

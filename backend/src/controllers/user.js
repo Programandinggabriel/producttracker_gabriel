@@ -31,7 +31,16 @@ const createUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updatedUser = await userService.updateUser(id, req.body);
+    const { name, email, username, roles} = req.body;
+
+    const updatedUser = await userService.updateUser(
+      id, 
+      name, 
+      email, 
+      username,
+      roles
+    );
+    
     res.json(updatedUser);
   } catch (error) {
     next(error)

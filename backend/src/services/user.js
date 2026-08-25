@@ -93,7 +93,22 @@ const createUser = async (user) => {
         );
     }
 
-    const newUser = await dbUser.createDbUser(user);
+    let newUser;
+    try{
+        newUser = await dbUser.createDbUser(user);
+    }catch(error){
+        if(error.constraint === 'users_username_key'){
+            throw new ThrowError(
+                "Username already exists", 
+                409,
+                "USERNAME_ALREADY_EXISTS",
+                {
+                    username: user.username
+                }
+            );
+        }
+    }
+
     const roleViewer = await dbRole.getRoleByName('viewer');
 
     await dbUser.assingUserRole(
@@ -151,8 +166,8 @@ const updateUser = async (
         if(error.constraint === 'users_username_key'){
             throw new ThrowError(
                 "Username already exists", 
-                400,
-                "BAD_REQUEST",
+                409,
+                "USERNAME_ALREADY_EXISTS",
                 {
                     username: username
                 }

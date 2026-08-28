@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { RegisterData } from "../types/auth";
-import { FormError } from "../types/form-error";
-import Alert from "./Alert";
-import { ErrorAlertMap } from "../types/alert";
-import { createUser } from "../services/auth";
+import { useState } from "react";
+import { RegisterData } from "../../types/auth";
+import { FormError } from "../../types/form-error";
+import Alert from "../Alert";
+import { ErrorAlertMap } from "../../types/alert";
+import { createUser } from "../../services/auth";
 
 export default function RegisterForm(){
+    const [userWasCreated, setUserWasCreated] = useState(false);
     const [formData, setFormData] = useState<RegisterData>({
         name: "",
         email: "",
@@ -18,42 +19,40 @@ export default function RegisterForm(){
 
     const [formErrors, setFormErrors] = useState<FormError[]>([]);
 
-
-    useEffect(() => {
-        const apiCreateUser = async() => {
-            const newUser = await createUser(formData);
+    async function apiCreateUser(data:RegisterData) {
+        const newUser = await createUser(formData);
+        
+        if(!newUser.success){
+            const status = newUser.error?.status;
+            const code = newUser.error?.data.error.code;
             
-            if(!newUser.success){
-                const status = newUser.error?.status;
-                const code = newUser.error?.data.error.code;
-
-                if(status === 409 && code === 'USERNAME_ALREADY_EXISTS'){
-                    addFormError({
-                        typeError: "form",
-                        field: "username",
-                        message: "Ya existe este nombre de usuario"
-                    })
-                }else if(status === 400 && code === 'BAD_REQUEST'){
-                    addFormError({
-                        typeError: "form",
-                        field: "any",
-                        message: "Revisa bien tus datos"
-                    })
-                }else if(status === 500) {
-                    addFormError({
-                        typeError: "server",
-                        field: "any",
-                        message: "No pudimos crear el usuario"
-                    })
-                }
+            setFormErrors([])
+            if(status === 409 && code === 'USERNAME_ALREADY_EXISTS'){
+                addFormError({
+                    typeError: "form",
+                    field: "username",
+                    message: "Ya existe este nombre de usuario"
+                })
+            }else if(status === 400 && code === 'BAD_REQUEST'){
+                addFormError({
+                    typeError: "form",
+                    field: "any",
+                    message: "Revisa bien tus datos"
+                })
+            }else if(status === 500) {
+                addFormError({
+                    typeError: "server",
+                    field: "any",
+                    message: "No pudimos crear el usuario"
+                })
             }
+        }else{
+            setUserWasCreated(true)
+            setTimeout(() => {
+                window.location.href = '/login'
+            }, 2000);
         };
-
-        if(formErrors.length === 0){
-            apiCreateUser()
-        }
-    }, [formErrors])
-
+    } 
 
     function addFormError({ typeError, field, message }:FormError){
         setFormErrors((oldArray) => 
@@ -81,6 +80,7 @@ export default function RegisterForm(){
 
     const onSubmitRegisterForm = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
+        let errors: { field: string }[] = [];
         const keys = Object.keys(formData) as (keyof RegisterData)[];
 
         setFormErrors([]);
@@ -89,6 +89,7 @@ export default function RegisterForm(){
                 const label = document.querySelector(`label[for="${key}"]`);
                 const htmlLabel = label?.innerHTML;
 
+                errors.push({ field: key })
                 addFormError({
                     typeError: 'required',
                     field: key,
@@ -98,6 +99,7 @@ export default function RegisterForm(){
         }
 
         if(formData.password !== formData.confirmPassword){
+            errors.push({ field: 'confirmPassword' })
             setFormErrors((oldArray) => 
                 [
                     ...oldArray,
@@ -108,6 +110,10 @@ export default function RegisterForm(){
                     }
                 ]
             )
+        }
+
+        if(errors.length === 0){
+            await apiCreateUser(formData);
         }
     }
 
@@ -158,7 +164,7 @@ export default function RegisterForm(){
                         id="username"
                         name="username"
                         type="text"
-                        placeholder="User3455"
+                        placeholder="Crea un nombre de usuario"
                         className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                         onChange={(e) => handleInputsChange(e)}
                     />
@@ -201,14 +207,18 @@ export default function RegisterForm(){
                 </div>
             </div>
             {
-                formErrors.map((error) => {
+                formErrors.map((error, index) => {
                     const typeAlert = ErrorAlertMap[error.typeError];
                     const message = error.message;
 
-                    return (<Alert typeAlert={typeAlert} message={message} />)
+                    return (<Alert key={index} typeAlert={typeAlert} message={message} />)
                 })
             }
-            
+            {
+                userWasCreated 
+                    ?<Alert typeAlert="success" message="Usuario creado existosamente..."/>
+                    :''
+            }
             <button
                 type="submit"
                 className="mt-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

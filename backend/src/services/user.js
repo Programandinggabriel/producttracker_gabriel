@@ -313,7 +313,7 @@ const updateUserProfile = async (
 
     let updatedUser;
     try{
-        updatedUser = await dbUser.updateDbUser(
+        updatedUser = await dbUser.updateDbUserProfile(
             currentUser,
             name,
             email,
@@ -323,8 +323,8 @@ const updateUserProfile = async (
         if(error.constraint === 'users_username_key'){
             throw new ThrowError(
                 "Username already exists", 
-                400,
-                "BAD_REQUEST",
+                409,
+                "USERNAME_ALREADY_EXISTS",
                 {
                     username: username
                 }
@@ -347,7 +347,7 @@ const changePassword = async (
         throw new ThrowError(
             'Current password is incorrect', 
             400,
-            'UNAUTHORIZED'
+            'BAD_REQUEST'
         )
     }
 

@@ -96,6 +96,24 @@ const updateDbUser = async (
     return rows[0];
 }
 
+const updateDbUserProfile = async (
+    id, 
+    name,
+    email,
+    username
+) => {
+    const query = `UPDATE users 
+                    SET name = $1, 
+                        email = $2,
+                        username = $3
+                    WHERE id = $4
+                   RETURNING id, name, email, username`;
+    
+    const values = [name, email, username, id];
+    const { rows } = await pool.query(query, values);
+    return rows[0];
+}
+
 const deleteDbUser = async (id) => {
     const query = 'DELETE FROM users WHERE id = $1';
     const values = [id];
@@ -242,6 +260,7 @@ module.exports = {
     findUserByEmail,
     createDbUser,
     updateDbUser,
+    updateDbUserProfile,
     deleteDbUser,
     resetDbUserPassword,
     changeDbUserPassword,

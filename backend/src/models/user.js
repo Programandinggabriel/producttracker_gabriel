@@ -83,15 +83,15 @@ const createDbUser = async (user) => {
 const updateDbUser = async (
     id, 
     name,
-    email,
-    username
+    email
 ) => {
     const query = `UPDATE users 
-                    SET name = $1, email = $2, username = $3
-                    WHERE id = $4 
-                   RETURNING id, name, email, username`;
+                    SET name = $1, 
+                        email = $2
+                    WHERE id = $3
+                   RETURNING id, name, email`;
     
-    const values = [name, email, username, id];
+    const values = [name, email, id];
     const { rows } = await pool.query(query, values);
     return rows[0];
 }

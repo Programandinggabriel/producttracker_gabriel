@@ -19,6 +19,16 @@ const getUser = async(req, res, next) => {
   }
 };
 
+const getUserById = async(req, res, next) => {
+   try {
+    const { id } = req.params;
+    const user = await userService.getUserById(id);
+    res.json(user);
+  } catch (error) {
+    next(error)
+  }
+}
+
 const createUser = async (req, res, next) => {
     try {
         const newUser = await userService.createUser(req.body);
@@ -31,13 +41,12 @@ const createUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, email, username, roles} = req.body;
-
+    const { name, email, roles} = req.body;
+    
     const updatedUser = await userService.updateUser(
       id, 
       name, 
-      email, 
-      username,
+      email,
       roles
     );
     
@@ -234,6 +243,7 @@ const deletePriceAlert = async (req, res, next) => {
 module.exports = {
     login,
     getUser,
+    getUserById,
     createUser,
     updateUser,
     deleteUser,

@@ -13,25 +13,30 @@ require('dotenv').config();
 const login = async (username, password) => {
     // Implement login logic here
     const user = await dbUser.findUserByUsername(username);
-    const userHashPass = await dbUser.getUserPassword(user.id)
 
     if (!user) {
         throw new ThrowError(
-            "User not found", 
-            404, 
-            "USER_NOT_FOUND", 
+            'Invalid credentials', 
+            401, 
+            "UNAUTHORIZED", 
             {
-                username: username
+                username: username,
+                password: password
             }
         )
     }
 
+    const userHashPass = await dbUser.getUserPassword(user.id);
     const isPassordValid = await bcrypt.compare(password, userHashPass.password);
     if (!isPassordValid) {
         throw new ThrowError(
             'Invalid credentials', 
             401, 
-            'UNAUTHORIZED'
+            'UNAUTHORIZED',
+            {
+                username: username,
+                password: password
+            }
         )
     }
 
@@ -84,6 +89,33 @@ const getUser = async () => {
     return userWithRoles.flat();
 }
 
+const getUserById = async (id) => {
+    const user = await dbUser.findUserById(id);
+
+    if(!user){
+        throw new ThrowError(
+            "User dont exists", 
+            404,
+            "USER_NOT_FOUND",
+            {
+                id: id
+            }
+        ); 
+    }
+
+    const roles = await dbUser.getUserRoles(id);
+    const mapRoles = roles.map(role => {
+        return {
+            role_id: role.role_id,
+            role_name: role.name
+        }
+    })
+    
+    user.roles = mapRoles
+
+    return user
+}
+
 const createUser = async (user) => {
     if (!user.name || !user.email || !user.password || !user.username) {
         throw new ThrowError(
@@ -130,12 +162,11 @@ const updateUser = async (
     id, 
     name,
     email,
-    username,
     roles
 ) => {
-    if (!name || !email || !username) {
+    if (!name || !email) {
         throw new ThrowError(
-            "Missing required fields: name, email, username", 
+            "Missing required fields: name, email", 
             400, 
             "BAD_REQUEST"
         );
@@ -146,45 +177,31 @@ const updateUser = async (
     if(!existsUser){
        throw new ThrowError(
             "User dont exists", 
-            400,
-            "BAD_REQUEST",
+            404,
+            "USER_NOT_FOUND",
             {
                 id: id
             }
         ); 
     }
-
-    let updatedUser;
-    try{
-        updatedUser = await dbUser.updateDbUser(
-            id,
-            name,
-            email,
-            username
-        );
-    }catch(error){
-        if(error.constraint === 'users_username_key'){
-            throw new ThrowError(
-                "Username already exists", 
-                409,
-                "USERNAME_ALREADY_EXISTS",
-                {
-                    username: username
-                }
-            );
-        }
-    }
+    
+    const updatedUser = await dbUser.updateDbUser(
+        id,
+        name,
+        email   
+    );
 
     let userRoles = await dbUser.getUserRoles(id);
 
     if(roles){
         const setCurrUsrRoles = new Set(userRoles.map(item => item.role_id));
-
-        const valueString = roles.replace(/[\[\]]/g, '');
-        const setRoles =  valueString === '' 
+        /*
+          const valueString = roles.replace(/[\[\]]/g, '');
+          const setRoles =  valueString === '' 
             ? new Set()
             : new Set(valueString.split(',').map(item => item.trim()));
-
+        */
+        const setRoles = new Set(roles.map(item => item.trim()))
         const rolesToadd = setRoles.difference(setCurrUsrRoles);
         const rolesToRemove = setCurrUsrRoles.difference(setRoles); 
         
@@ -706,6 +723,7 @@ const deletePriceAlert = async (idUser, idAlert) => {
 module.exports = {
     login,
     getUser,
+    getUserById,
     createUser, 
     updateUser,
     deleteUser,

@@ -41,7 +41,9 @@ export default function UpdateForm({ id }: UpdateProps) {
                 const status = currentUser.error?.status;
                 const code = currentUser.error?.code;
 
-                if(status === 500){
+                if(status === 404){
+                    window.location.href = '/error/404'
+                }else if(status === 500){
                     alert('Error inesperado')
                 }
             }

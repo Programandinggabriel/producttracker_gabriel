@@ -1,10 +1,18 @@
 import { AxiosError } from "axios";
-import { RegisterData } from "../types/auth";
+import { LoginData, RegisterData, UpdateData } from "../types/auth";
 import { api, ApiError } from "./axios"
 
-type Role = {
+//Preview role
+export type Role = {
     role_id: String;
     role_name: String
+}
+
+//Full role
+export type RoleWithPermissions = {
+    id: String;
+    name: String;
+    permissions: []
 }
 
 type NewUser = {
@@ -14,6 +22,37 @@ type NewUser = {
     password: String;
     username: String;
     roles: Array<Role>;
+}
+
+export type User = {
+    id: String,
+    name: String,
+    email: String,
+    username: String,
+    roles: Array<Role>
+}
+
+export type UserGet = {
+    id: String,
+    name: string,
+    email: string,
+    username: string,
+    roles: Array<Role> 
+}
+
+type UpdatedUser = {
+    id: String;
+    name: String;
+    email: String;
+    roles: Array<Role>
+}
+
+type Delete = {
+    message: String
+}
+
+type TokenUser = {
+    token: string
 }
 
 export const createUser = async(formData: RegisterData) => {
@@ -37,6 +76,125 @@ export const createUser = async(formData: RegisterData) => {
         return {
             success: false,
             error: err.response
+        }
+    }
+}
+
+export const loginUser = async(formData: LoginData) => {
+  try{
+        const payload = {
+            username: formData.username,
+            password: formData.password
+        }
+        
+        const { data } = await api.post<TokenUser>('/users/login', payload);
+        
+        return {
+            success: true,
+            data
+        };
+    }catch(error){
+        const err = error as AxiosError<ApiError>;
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const getUsers = async() => {
+    try{
+        const { data } = await api.get<User[]>('/users');
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err
+        }
+    }
+}
+
+export const getUserById = async(id:String) => {
+    try{
+        const { data } = await api.get<UserGet>(`/users/${id}`);
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err
+        }
+    }
+}
+
+export const updateUser = async(id: String, formData: UpdateData) => {
+    try{
+        const payload = {
+            name: formData.name,
+            email: formData.email,
+            roles: formData.roles.map(role => role.role_id)
+        }
+        
+        const { data } = await api.put<UpdatedUser>(`/users/${id}`, payload);
+        
+        return {
+            success: true,
+            data
+        };
+    }catch(error){
+        const err = error as AxiosError<ApiError>;
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const deleteUser = async(id: String) => {
+    try{
+        const { data } = await api.delete<Delete>(`/users/${id}`);
+        
+        return {
+            success: true,
+            data
+        };
+    }catch(error){
+        const err = error as AxiosError<ApiError>;
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const getRoles = async() => {
+    try{
+        const { data } = await api.get<RoleWithPermissions[]>('/roles');
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err
         }
     }
 }

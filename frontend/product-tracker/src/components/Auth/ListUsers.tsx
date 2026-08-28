@@ -14,7 +14,15 @@ export default function ListUsers() {
         const apiUsersResponse = await getUsers();
         const arrayUsers = apiUsersResponse.data ?? []
         
-        setUsers(arrayUsers)  
+        if(apiUsersResponse.success){
+            setUsers(arrayUsers)
+        }else{
+            const code = apiUsersResponse.error?.status;
+
+            if (code === 500){
+                alert('Error al obtener usuarios')
+            }
+        }
     };
 
     const handleDeleteUser = () => {

@@ -39,12 +39,11 @@ export default function UpdateForm({ id }: UpdateProps) {
                 }
             }else{
                 const status = currentUser.error?.status;
-                const code = currentUser.error?.code;
 
                 if(status === 404){
                     window.location.href = '/error/404'
                 }else if(status === 500){
-                    alert('Error inesperado')
+                    alert('Error al obtener usuario por id')
                 }
             }
         };
@@ -167,7 +166,7 @@ export default function UpdateForm({ id }: UpdateProps) {
                         id="name"
                         name="name"
                         type="text"
-                        placeholder="Tu nombre completo"
+                        placeholder="Nombre completo"
                         className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                         value={formData?.name}
                         onChange={(e) => handleInputChanges(e)}
@@ -183,7 +182,7 @@ export default function UpdateForm({ id }: UpdateProps) {
                         id="email"
                         name="email"
                         type="email"
-                        placeholder="tuemail@dominio.com"
+                        placeholder="email@dominio.com"
                         className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                         value={formData?.email}
                         onChange={(e) => handleInputChanges(e)}
@@ -199,7 +198,7 @@ export default function UpdateForm({ id }: UpdateProps) {
                         id="username"
                         name="username"
                         type="text"
-                        placeholder="Crea un nombre de usuario"
+                        placeholder="Nombre de usuario"
                         className="text-fg-disabled bg-disabled rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                         readOnly
                         value={formData.username}

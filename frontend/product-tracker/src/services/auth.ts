@@ -1,5 +1,5 @@
 import { AxiosError } from "axios";
-import { LoginData, RegisterData, UpdateData } from "../types/auth";
+import { LoginData, ProfileData, RegisterData, UpdateData } from "../types/auth";
 import { api, ApiError } from "./axios"
 
 //Preview role
@@ -38,6 +38,13 @@ export type UserGet = {
     email: string,
     username: string,
     roles: Array<Role> 
+}
+
+export type UserProfile = {
+    id: String;
+    name: string;
+    email: string;
+    username: string
 }
 
 type UpdatedUser = {
@@ -116,7 +123,7 @@ export const getUsers = async() => {
         
         return {
             success: false,
-            error: err
+            error: err.response
         }
     }
 }
@@ -134,7 +141,7 @@ export const getUserById = async(id:String) => {
         
         return {
             success: false,
-            error: err
+            error: err.response
         }
     }
 }
@@ -194,7 +201,72 @@ export const getRoles = async() => {
         
         return {
             success: false,
-            error: err
+            error: err.response
+        }
+    }
+}
+
+export const getProfile = async() => {
+    try{
+        const { data } = await api.get<UserProfile>('/users/profile');
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const updateProfile = async(formData: ProfileData) => {
+     try{
+        const payload = {
+            name: formData.name,
+            email: formData.email,
+            username: formData.username
+        }
+
+        const { data } = await api.put<UserProfile>('/users/profile', payload);
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const changePassword =  async (oldPassword: String, newPassword: String) => {
+       try{
+        const payload = {
+            current_password: oldPassword,
+            new_password: newPassword
+        }
+
+        const { data } = await api.patch<{message: string}>('/users/profile/change-password', payload);
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err.response
         }
     }
 }

@@ -17,6 +17,13 @@ router.post(
     controllers.createUser
 );
 
+router.get(
+    "/:id",
+    auth,
+    permission('user:get'),
+    controllers.getUserById
+)
+
 router.put(
     "/:id",
     auth, 
@@ -49,7 +56,7 @@ router.get(
     controllers.getUserProfile
 )
 
-router.post(
+router.put(
     "/profile",
     auth,
     controllers.updateProfile

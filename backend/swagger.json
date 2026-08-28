@@ -115,7 +115,7 @@
           }
         }
       },
-      "post": {
+      "put": {
         "tags": ["Users"],
         "description": "Actualizar pefil de usuario",
         "parameters": [
@@ -221,6 +221,26 @@
       }
     },
     "/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "description": "Obtener usuario",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
       "put": {
         "tags": ["Users"],
         "description": "Actualizar usuario",
@@ -242,9 +262,6 @@
                 },
                 "email": {
                   "example": "juancarlosp344@gmai.com"
-                },
-                "username": {
-                  "example": "userRandom455"
                 },
                 "roles": {
                   "example": "[id]"

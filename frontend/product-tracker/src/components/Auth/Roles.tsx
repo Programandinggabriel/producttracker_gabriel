@@ -15,6 +15,8 @@ export default function Roles({ roles, onRolesChange }:RolesParams){
             if(aviableRoles.success){
                 const roles = aviableRoles.data ?? [];
                 setAviableRoles(roles)
+            }else{
+                alert('Error al obtener roles disponibles')
             }
         }
 

@@ -15,6 +15,14 @@ export type UpdateData = {
     roles: Array<Role>
 };
 
+export type ProfileData = {
+    name: string,
+    email: string,
+    username: string,
+    oldPassword: string,
+    newPassword: string,
+    confirmPassword: String
+}
 
 export type LoginData = {
     username: string,

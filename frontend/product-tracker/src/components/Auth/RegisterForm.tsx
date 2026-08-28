@@ -84,6 +84,8 @@ export default function RegisterForm(){
         const keys = Object.keys(formData) as (keyof RegisterData)[];
 
         setFormErrors([]);
+        setUserWasCreated(false)
+
         for (const key of keys){
             if(formData[key] === ""){
                 const label = document.querySelector(`label[for="${key}"]`);
@@ -104,7 +106,7 @@ export default function RegisterForm(){
                 [
                     ...oldArray,
                     {
-                        typeError: "required",
+                        typeError: "notEquals",
                         field: 'confirmPassword',
                         message: `Las contraseñas no coinciden`
                     }
@@ -112,9 +114,11 @@ export default function RegisterForm(){
             )
         }
 
-        if(errors.length === 0){
-            await apiCreateUser(formData);
+        if(errors.length > 0){
+            return;
         }
+
+        await apiCreateUser(formData);
     }
 
     return(

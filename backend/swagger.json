@@ -603,6 +603,34 @@
           }
         }
       }
+    },
+    "/products/{provider}/{externalId}": {
+      "get": {
+        "tags": ["Products"],
+        "description": "Obtener producto por id",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "externalId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
     }
   }
 }

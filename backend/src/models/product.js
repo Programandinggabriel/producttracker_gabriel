@@ -33,18 +33,22 @@ class Product {
 
 //Products
 const getProduct = async (idProd, idProv) => {
-    const query = `SELECT id
+    const query = `SELECT id,
+                          provider_id as "providerId",
+                          product_id as "productId",
+                          title,
+                          description,
+                          price,
+                          currency,
+                          url
                     FROM products
                    WHERE product_id = $1
                      AND provider_id = $2`;
-    const values = [idProd, idProv]
+    const values = [idProd, idProv];
 
-    const result =  await pool.query(query, values)
+    const { rows } =  await pool.query(query, values)
     
-    return {
-        rows: result.rows,
-        rowCount: result.rowCount
-    }
+    return rows[0]
 }
 
 const getProducts = async (
@@ -56,14 +60,12 @@ const getProducts = async (
   const params = [];
 
   let query = `SELECT id,
-                      provider_id,
-                      product_id,
+                      product_id as "productId",
+                      provider_id as "providerId",
                       title,
-                      description,
                       price,
                       currency,
-                      url,
-                      stock
+                      url
                 FROM products`;
 
   if (sortBy && ALLOWED_SORTBY.includes(sortBy)) {
@@ -166,7 +168,7 @@ const getProductImages = async (id) => {
                           position
                    FROM products_images
                    WHERE id_product = $1
-                   ORDER BY position ASC`
+                   ORDER BY position ASC`;
     const values = [id]
 
     const { rows } = await pool.query(query, values)

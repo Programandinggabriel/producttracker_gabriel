@@ -2,6 +2,7 @@ const dbProvider = require('../../models/provider');
 const dbCategory = require('../../models/category');
 const dbProviderCategoryCache = require('../../models/provider-category-cache');
 const redisCache = require('../../redis/product');
+const { mapPreviewProduct } = require('../utils/response-product-mapper');
 
 const CACHE_SIZE = 100;
 
@@ -102,8 +103,12 @@ const getQueryProducts = async (query, limit, offset) => {
     )
 
     const results = await Promise.all(providerPromises);
+    
+    const previewData = results.flat().map((product) => {
+        return mapPreviewProduct(product)
+    })
 
-    return results.flat()
+    return previewData
 }
 
 
@@ -171,12 +176,24 @@ const getProductsByCategory = async (idCat, limit, offset) => {
 
     const results = await Promise.all(providerPromises);
 
-    return results.flat()
+    const previewData = results.flat().map((product) => {
+        return mapPreviewProduct(product)
+    })
+
+    return previewData
 }
 
+
+const findProductInCache = async (providerId, externalId) => {
+    const cached = await redisCache.findProduct(providerId, externalId);
+    if(cached.hit){
+        return cached.product
+    }
+}
 
 
 module.exports = {
     getProductsByCategory,
-    getQueryProducts
+    getQueryProducts,
+    findProductInCache
 }

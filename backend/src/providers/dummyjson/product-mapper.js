@@ -2,7 +2,7 @@ const { Product } = require('../../models/product')
 
 function mapDummyJsonProduct(product){
     return new Product({
-        productId: product.id,
+        productId: String(product.id),
         providerId: 'dummyjson',
         title: product.title,
         description: product.description,

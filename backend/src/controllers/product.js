@@ -65,8 +65,24 @@ const getProductsByCategory = async (req, res, next) => {
 
 }
 
+const getProductById = async (req, res, next) => {
+     try{
+        const { provider, externalId } = req.params;
+        
+        const product = await productService.getProductById(
+            provider,
+            externalId
+        )
+
+        return res.status(200).json(product)
+    }catch(error){
+        next(error)
+    }
+}
+
 module.exports = {
     getProducts,
     queryProducts,
-    getProductsByCategory
+    getProductsByCategory,
+    getProductById
 }

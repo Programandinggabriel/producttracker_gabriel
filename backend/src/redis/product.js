@@ -21,14 +21,14 @@ async function cacheProductsQuery(
         const redisKey = `products:query:${query}`;
         const cacheField = String(offset);
 
-        const timeCache = 600
+        const timeCache = 30; //min
 
         await redisClient.hSet(
             redisKey, 
             cacheField, 
             JSON.stringify(products)
         )
-        await redisClient.expire(redisKey, timeCache)
+        await redisClient.expire(redisKey, timeCache * 60)
         return true
     }catch (error){
         logRedisError(error)
@@ -82,11 +82,15 @@ async function cacheProductsByCategory(
         const redisKey = `products:provider:${provider}:category:${idCategory}`;
         const cacheField = String(offset);
 
+        const timeCache = 120; //min
+
         await redisClient.hSet(
             redisKey,
             cacheField,
             JSON.stringify(products)
         );
+
+        await redisClient.expire(redisKey, timeCache * 60)
 
         return true;
         
@@ -127,9 +131,72 @@ async function getCacheProductsByCategory(idCategory, provider, offset) {
     }
 }
 
+async function findProduct(provider, externalId) {
+    let product = null;
+    try{
+        const queryKey = 'products:*';
+        const matchKeys = [];
+        const iterator = redisClient.scanIterator({
+            MATCH: queryKey,
+            COUNT: 100
+        });
+
+        for await(const key of iterator){
+            matchKeys.push(key)
+        }
+        
+        if(matchKeys.length === 0){
+            return {
+                available: true,
+                hit: false,
+                product: product
+            };
+        }
+
+        
+        let wasFound = false;
+        for(const batch of matchKeys){
+            for(const key of batch){
+                const values = await redisClient.hVals(key)
+                const products = JSON.parse(values)
+                
+                const productFilter = products.filter((product) => {
+                    return product.providerId === provider &&
+                           product.productId === externalId
+                });
+                const productFind = productFilter[0];
+                
+                if(productFind){
+                    product = productFind
+                    wasFound = true
+                    break;
+                }
+            }
+            if(wasFound) break;
+        }
+        
+        return {
+            available: true,
+            hit: true,
+            product: product
+        };
+
+    }catch(error){
+        logRedisError(error)
+
+        return {
+            available: false,
+            hit: false,
+            product: product
+        };
+    }
+}
+
+
 module.exports = {
     cacheProductsByCategory,
     getCacheProductsByCategory,
     cacheProductsQuery,
-    getCacheQueryProducts
+    getCacheQueryProducts,
+    findProduct
 }

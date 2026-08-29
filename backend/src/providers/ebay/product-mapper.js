@@ -27,7 +27,7 @@ function mapEbayProduct ( { item, category }) {
     }
 
     return new Product({
-        productId: item.itemId,
+        productId: String(item.itemId),
         providerId: "ebay",
         title: item.title || "",
         description:

@@ -179,14 +179,13 @@ const getProductImages = async (id) => {
 //External Products
 const getExternalProductById = async (id) => {
      const query = `SELECT id,
-                           provider_id,
-                           product_id,
+                           provider_id as "providerId",
+                           product_id as "productId",
                            title,
                            description,
                            price,
                            currency,
-                           url,
-                           stock               
+                           url              
                       FROM external_products 
                     WHERE id = $1`;
     const values = [id]
@@ -204,8 +203,7 @@ const getExternalProduct = async (idProv, idProd) => {
                            description,
                            price,
                            currency,
-                           url,
-                           stock               
+                           url              
                      FROM external_products 
                     WHERE product_id = $1
                       AND provider_id = $2`;

@@ -176,6 +176,19 @@ const getPriceAlerts = async(req, res, next) => {
   }
 }
 
+const getPriceAlertById = async(req, res, next) => {
+  try{
+    const { idAlert } = req.params;
+    
+    const alert = await userService.getPriceAlertById(idAlert);
+
+    res.status(200).json(alert)
+
+  }catch(error){
+    next(error)
+  }
+}
+
 const createPriceAlert = async(req, res, next) => {
   try{
     const idUser = req.user.id;
@@ -255,6 +268,7 @@ module.exports = {
     getProductFavorite,
     deleteProductFavorite,
     getPriceAlerts,
+    getPriceAlertById,
     createPriceAlert,
     updatePriceAlert,
     deletePriceAlert

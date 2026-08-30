@@ -7,6 +7,7 @@ const dbProduct = require('../models/product');
 const dbProvider = require('../models/provider');
 const dbProductPriceAlert = require('../models/product-price-alerts');
 const utilsExternalProduct = require('./utils/external-products');
+const { mapPreviewProduct, mapDetailProduct } = require('./utils/response-product-mapper');
 
 require('dotenv').config();
 
@@ -436,10 +437,9 @@ const getProductFavorite = async (idUser) => {
         allUserFavorites.map(async (product) => {
             const arrayImages = await dbProduct.getExternalProductImages(product.id);
             
-            return {
-                ...product,
-                images: arrayImages.map(img => img.image)
-            }
+            product.images = arrayImages.map(img => img.image)
+
+            return mapPreviewProduct(product)
         })
     )
 
@@ -474,14 +474,16 @@ const getPriceAlerts = async (
     )
     const productAlerts = await Promise.all(
         userAlerts.map(async (uAlert) => {
-            const product = await dbProduct.getExternalProductById(
-                uAlert.product_id
-            );
+            const productId = uAlert.product_id;
+            const product = await dbProduct.getExternalProductById(productId);
+            const productImages = await dbProduct.getExternalProductImages(productId);
+
+            product.images = productImages.map(img => img.image)
 
             return {
                 alert: {
                     ...uAlert,
-                    product: product
+                    product: mapPreviewProduct(product)
                 }
             }
         })
@@ -489,6 +491,34 @@ const getPriceAlerts = async (
 
     return productAlerts
 }
+
+const getPriceAlertById = async (id) => {
+    const alert = await dbProductPriceAlert.getProductPriceAlertById(id);
+
+    if(!alert){
+        throw new ThrowError(
+            "Price alert doesnt exists", 
+            404,
+            "ALERT_NOT_FOUND",
+            {
+                alert: id
+            }
+        );
+    }
+
+    const product = await dbProduct.getExternalProductById(alert.product_id);
+    const images = await dbProduct.getExternalProductImages(product.id)
+
+    product.images = images.map(img => img.image)
+
+    return {
+        alert: {
+                ...alert,
+                product: mapDetailProduct(product)
+        }
+    }
+}
+
 
 const createPriceAlert = async (
     idUser, 
@@ -735,6 +765,7 @@ module.exports = {
     getProductFavorite,
     deleteProductFavorite,
     getPriceAlerts,
+    getPriceAlertById,
     createPriceAlert,
     updatePriceAlert,
     deletePriceAlert

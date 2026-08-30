@@ -222,14 +222,12 @@ const getDbUserProductFavorite = async(idUser, provider, externalIdProduct) => {
 
 const getDbUserProductsFavorites = async (idUser) => {
     const query = `SELECT eprods.id,
-                          eprods.provider_id,
-                          eprods.product_id,
+                          eprods.provider_id as "providerId",
+                          eprods.product_id as "productId",
                           eprods.title,
-                          eprods.description,
                           eprods.price,
                           eprods.currency,
-                          eprods.url,
-                          eprods.stock
+                          eprods.url
                     FROM users_product_favorite ufav
                    JOIN external_products eprods
                      ON ufav.product_id = eprods.id

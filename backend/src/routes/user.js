@@ -101,6 +101,14 @@ router.delete(
     controllers.deleteProductFavorite
 )
 
+router.get(
+    "/alerts/price/:idAlert",
+    auth,
+    permission('user_price_alert:get'),
+    controllers.getPriceAlertById
+)
+
+
 router.put(
     "/alerts/price/:idAlert", 
     auth, 

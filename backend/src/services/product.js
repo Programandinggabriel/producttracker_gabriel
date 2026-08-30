@@ -229,6 +229,21 @@ const getProductById = async (
         return mapDetailProduct(productDb)
     }
 
+    const productDbExternal = await dbProduct.getExternalProduct(providerID, externalId)
+    const externalProduct = productDbExternal.product;
+    if(externalProduct){
+        const images = await dbProduct.getExternalProductImages(externalProduct.id);
+        externalProduct.providerId = externalProduct.provider_id
+        externalProduct.productId = externalProduct.product_id
+
+        delete externalProduct.provider_id
+        delete externalProduct.product_id
+
+        externalProduct.images = images.map(img => img.image)
+        
+        return mapDetailProduct(externalProduct)
+    }
+
     const productCache = await productCacheService.findProductInCache(
         providerID,
         externalId

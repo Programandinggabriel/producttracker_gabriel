@@ -34,7 +34,10 @@ const getProductPriceAlertById = async (id) => {
                           user_id,
                           product_id,
                           target_price,
-                          direction
+                          direction,
+                          active,
+                          created,
+                          updated
                      FROM products_price_alerts
                     WHERE id = $1`;
     const values = [id];
@@ -65,9 +68,7 @@ const getUserPriceAlerts = async (idUser) => {
                           product_id,
                           target_price,
                           direction,
-                          active,
-                          created,
-                          updated
+                          active
                     FROM products_price_alerts
                    WHERE user_id = $1`;
     const values = [idUser];

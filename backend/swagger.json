@@ -417,7 +417,27 @@
       }
     },
     "/users/alerts/price/{id}": {
-     "put": {
+     "get": {
+        "tags": ["Users"],
+        "description": "Obtener alerta de precio",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
         "tags": ["Users"],
         "description": "Editar alerta de precio",
         "parameters": [

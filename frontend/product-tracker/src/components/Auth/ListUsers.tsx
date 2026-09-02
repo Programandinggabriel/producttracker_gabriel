@@ -106,7 +106,7 @@ export default function ListUsers() {
                 </table>
             </div>
             {isApiError 
-                ? <ModalError apiError={apiError}/>
+                ? <ModalError apiError={apiError} onModalHide={() => setIsApiError(false)}/>
                 : ''
             }
         </div>

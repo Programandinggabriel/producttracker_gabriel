@@ -7,11 +7,12 @@ type ModalErrorProps = {
     apiError: {
         code: String, 
         message: String
-    }
+    },
+    onModalHide: () => void 
 }
 
 
-export default function ModalError({ apiError }: ModalErrorProps){
+export default function ModalError({ apiError, onModalHide }: ModalErrorProps){
     const modalRef = useRef<Modal>(null);
     const modalDivRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +38,7 @@ export default function ModalError({ apiError }: ModalErrorProps){
 
     const hideModal = () => {
         modalRef.current?.hide()
+        onModalHide()
     }
     
 

@@ -167,7 +167,7 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                 </div>
         }
         {isApiError && (
-            <ModalError apiError={apiError}/>
+            <ModalError apiError={apiError} onModalHide={() => setIsApiError(false)}/>
         )}
     </>
     )

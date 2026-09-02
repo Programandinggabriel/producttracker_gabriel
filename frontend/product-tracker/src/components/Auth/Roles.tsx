@@ -1,12 +1,20 @@
+"use client";
+
 import { getRoles, type Role, type RoleWithPermissions } from "@/src/services/auth"
 import { useEffect, useState } from "react";
 
 type RolesParams = {
     roles: Array<Role>;
     onRolesChange: (roles: Array<Role>) => void;
+    onApiError: (apiError: { code: String, message: String }) => void;
 }
 
-export default function Roles({ roles, onRolesChange }:RolesParams){
+export default function Roles({ roles, onRolesChange, onApiError }:RolesParams){
+    const [apiError, setApiError] = useState<{code: String, message: String}>({
+        code : '',
+        message: ''
+    });
+
     const [aviableRoles, setAviableRoles] = useState<RoleWithPermissions[]>([]);
 
     useEffect(() => {
@@ -16,7 +24,20 @@ export default function Roles({ roles, onRolesChange }:RolesParams){
                 const roles = aviableRoles.data ?? [];
                 setAviableRoles(roles)
             }else{
-                alert('Error al obtener roles disponibles')
+                const status = aviableRoles.error?.status;
+                const apiError = aviableRoles.error?.data.error;
+
+                setApiError({
+                    code: apiError?.code ?? '',
+                    message: apiError?.message ?? ''
+                })
+
+                if(status === 500){
+                    onApiError({
+                        code: apiError?.code ?? '',
+                        message: apiError?.message ?? ''
+                    })
+                }
             }
         }
 

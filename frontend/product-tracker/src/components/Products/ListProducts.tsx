@@ -1,36 +1,30 @@
 'use client'
 
-import { getProducts, type ItemProduct } from "@/src/services/products"
-import { useEffect, useState } from "react"
+import { type ItemProduct } from "@/src/services/products"
 import Product from "./Product";
+import { useState } from "react";
+import ProductLoading from "./ProductLoading";
 
-export default function ListProducts(){
-    const [previewProducts, setPreviewProducts] = useState<ItemProduct[]>([]);
-    
-    const getApiProducts = async() => {
-        const products = await getProducts();
-        
-        if(products.success){
-            const data = products.data || [];
-            setPreviewProducts(data)
-        }else{
-            const status = products.error?.status;
+type ListProductsProps = {
+    products: ItemProduct[];
+    isLoading: Boolean;
+}
 
-            if(status === 500){
-                alert('Error al cargar productos')
-            }
-        }
-    }
-
-    useEffect(()=> {
-        getApiProducts()
-    }, [])
-    
+export default function ListProducts({ products, isLoading }:ListProductsProps){
+    const [cardsLoadingQty, setCardsLoadingQty] = useState(20);
     return (
         <>
-            <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">            
+            <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-3">            
+                {isLoading && (
+                    Array.from({length: cardsLoadingQty}).map((_, index) => {
+                        return (
+                            <ProductLoading key={index}/>
+                        )
+                    })
+                    
+                )}
                 {
-                    previewProducts.map((product, index) => {
+                    products.map((product, index) => {
                         return (
                             <Product key={index} product={product} />
                         )

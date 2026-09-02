@@ -1,3 +1,5 @@
+"use client"
+
 import { getUserById, Role, updateUser, UserGet } from "@/src/services/auth";
 import { UpdateData } from "@/src/types/auth";
 import { FormError } from "@/src/types/form-error";
@@ -5,12 +7,20 @@ import React, { useEffect, useState } from "react";
 import Roles from "./Roles";
 import { ErrorAlertMap } from "@/src/types/alert";
 import Alert from "../Alert";
+import ModalError from "../ModalError";
 
 type UpdateProps = {
     id: String;
 }
 
 export default function UpdateForm({ id }: UpdateProps) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [isApiError, setIsApiError] = useState(false);
+    const [apiError, setApiError] = useState<{code: String, message: String}>({
+        code : '',
+        message: ''
+    });
+
     const [currentData, setCurrentData] = useState<UserGet>();
     const [formData, setFormData] = useState<UpdateData>({
         name: "",
@@ -23,6 +33,7 @@ export default function UpdateForm({ id }: UpdateProps) {
 
     useEffect(() => {
         const getApiUserById = async (id: String) => {
+            setIsLoading(true)
             const currentUser = await getUserById(id);
 
             if (currentUser.success) {
@@ -39,13 +50,20 @@ export default function UpdateForm({ id }: UpdateProps) {
                 }
             }else{
                 const status = currentUser.error?.status;
+                const apiError = currentUser.error?.data.error;
+
+                setApiError({
+                    code: apiError?.code ?? '',
+                    message: apiError?.message ?? ''
+                })
 
                 if(status === 404){
                     window.location.href = '/error/404'
-                }else if(status === 500){
-                    alert('Error al obtener usuario por id')
+                }else if(status === 500 || status === 400){
+                    setIsApiError(true)
                 }
             }
+            setIsLoading(false)
         };
 
         getApiUserById(id);
@@ -79,6 +97,14 @@ export default function UpdateForm({ id }: UpdateProps) {
                 roles: roles
             }
         })
+    }
+
+    const handleRolesApiError = (apiError: { code: String, message: String }) => {
+        setApiError({
+            code: apiError?.code ?? '',
+            message: apiError?.message ?? ''
+        })
+        setIsApiError(true)
     }
 
     const apiUpdateUser = async() =>{
@@ -150,7 +176,10 @@ export default function UpdateForm({ id }: UpdateProps) {
             </svg>
         </div>
         
-        <form onSubmit={(e)=> onSubmitUpdateForm(e)} className="mx-auto flex w-full max-w-xl flex-col rounded-xl border border-gray-200 bg-white p-8 shadow-sm gap-3">
+        <form
+            onSubmit={(e)=> onSubmitUpdateForm(e)} 
+            className={`mx-auto flex w-full max-w-xl flex-col rounded-xl border border-gray-200 bg-white p-8 shadow-sm gap-3 ${isLoading ? 'animate-pulse' : ''}`}
+        >
             <div>
                 <h2 className="text-2x1 font-bold text-gray-900">
                     Actualizar usuario
@@ -209,6 +238,7 @@ export default function UpdateForm({ id }: UpdateProps) {
             <Roles 
                 roles={formData.roles}
                 onRolesChange={(roles) => (handleRolesChange(roles))}
+                onApiError={(apiError) => {handleRolesApiError(apiError)}}
             />
 
             {
@@ -234,6 +264,10 @@ export default function UpdateForm({ id }: UpdateProps) {
                 Actualizar
             </button>`
         </form>
+        {isApiError
+            ? <ModalError apiError={apiError}/>
+            : '' 
+        }
     </>
     )
 }

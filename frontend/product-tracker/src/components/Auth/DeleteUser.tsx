@@ -1,21 +1,41 @@
 'use client'
 
 import { deleteUser } from "@/src/services/auth";
+import { useState } from "react";
 
 type DeleteUserProps = {
     id: String;
     onDeleted: (id: String) => void;
+    onApiError: (apiError: {code: String, message: String}) => void;
 }
 
-export default function DeleteUser({ id, onDeleted }: DeleteUserProps){
+export default function DeleteUser({ id, onDeleted, onApiError }: DeleteUserProps){
+    const [apiError, setApiError] = useState<{code: String, message: String}>({
+        code : '',
+        message: ''
+    });
+
     const deleteApiUser = async (id: String) => {
         const deleted = await deleteUser(id)
 
         if(deleted.success){
             onDeleted(id)
         }else{
-            const error = deleted.error
-            alert(`Error ${error?.status}, no se pudo eliminar el usuario`)
+            const status = deleted.error?.status;
+            const apiError = deleted.error?.data.error;
+
+            setApiError({
+                code: apiError?.code ?? '',
+                message: apiError?.message ?? ''
+            })
+
+            if(status === 500 || status === 400){
+                onApiError({
+                    code: apiError?.code ?? '',
+                    message: apiError?.message ?? ''
+                })
+            }
+
         }
     }
     

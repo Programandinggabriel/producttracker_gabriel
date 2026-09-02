@@ -79,12 +79,14 @@ const getQueryProducts = async (query, limit, offset) => {
                 
                 getCache: (blockOffset) =>
                     redisCache.getCacheQueryProducts(
+                        provider.name,
                         query, 
                         blockOffset
                     ),
                 
                 setCache: (blockOffset, blockProducts) => 
                     redisCache.cacheProductsQuery(
+                        provider.name,
                         query,
                         blockOffset,
                         blockProducts

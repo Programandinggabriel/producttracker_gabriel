@@ -2,6 +2,7 @@ const userRoutes = require("./user");
 const roleRouter = require("./role");
 const productRoutes = require("./product");
 const categoryRoutes = require("./category");
+const providerRoutes = require("./provider")
 
 module.exports = [
     {
@@ -19,5 +20,9 @@ module.exports = [
     {
         path: "/categories",
         router: categoryRoutes
+    },
+    {
+        path: "/providers",
+        router: providerRoutes
     }
 ]

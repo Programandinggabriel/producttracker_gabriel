@@ -42,9 +42,18 @@ const getProducts = async (
                 return mapPreviewProduct(product)
             }
         )
-    )
+    );
 
-    return previewData.flat();
+    return {
+        products: previewData,
+        meta: {
+            limit,
+            offset,
+            sortBy,
+            order,
+            hasMore: limit <= previewData.length
+        }
+    }
 }
 
 const getQueryProducts = async (
@@ -214,7 +223,7 @@ const getProductById = async (
     
     if(provider.rowCount === 0){
         throw new ThrowError(
-            'Provider not exists',
+            'Provider inactive or dont exists',
              400,
             'BAD_REQUEST'
         )

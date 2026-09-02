@@ -37,6 +37,10 @@
       "description": "Operaciones - gestion de categoria"
     },
     {
+      "name": "Providers",
+      "description": "Operaciones - gestion de proovedores"
+    },
+    {
       "name": "Products",
       "description": "Operaciones - gestion de productos"
     }
@@ -526,11 +530,47 @@
         }
       }
     },
+    "/providers": {
+      "get": {
+        "tags": ["Providers"],
+        "description": "Obtener proovedores",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
     "/products": {
       "get": {
         "tags": ["Products"],
         "description": "Obtener vista previa de productos",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"

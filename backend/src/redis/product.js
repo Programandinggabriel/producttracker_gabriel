@@ -13,12 +13,13 @@ function logRedisError (err) {
 
 //Cachea query de productos
 async function cacheProductsQuery(
+    provider,
     query,
     offset,
     products
 ) {
     try{
-        const redisKey = `products:query:${query}`;
+        const redisKey = `products:provider:${provider}:query:${query}`;
         const cacheField = String(offset);
 
         const timeCache = 30; //min
@@ -37,10 +38,14 @@ async function cacheProductsQuery(
     
 }
 
-async function getCacheQueryProducts(query, offset) {
+async function getCacheQueryProducts(
+    provider,
+    query,
+    offset
+) {
     try{
-        const redisKey = `products:query:${query}`;
-        const cacheField = String(offset)
+        const redisKey = `products:provider:${provider}:query:${query}`;
+        const cacheField = String(offset);
 
         const cached = await redisClient.hGet(
             redisKey,

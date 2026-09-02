@@ -428,7 +428,10 @@ const createProductFavorite = async (idUser, provider, idProduct) => {
         idUser
     );
 
-    return external_product;
+    return {
+        id: newProduct.id,
+        ...mapPreviewProduct(external_product)
+    }
 }
 
 const getProductFavorite = async (idUser) => {
@@ -439,7 +442,10 @@ const getProductFavorite = async (idUser) => {
             
             product.images = arrayImages.map(img => img.image)
 
-            return mapPreviewProduct(product)
+            return {
+                id: product.id,
+                ...mapPreviewProduct(product)
+            }
         })
     )
 

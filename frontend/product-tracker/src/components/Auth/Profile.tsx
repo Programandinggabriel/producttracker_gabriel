@@ -36,7 +36,15 @@ export default function Profile(){
                 })
             }else{
                 const status = profile.error?.status;
-                alert(`Error ${status} al obtener perfil`)
+                const code = profile.error?.data.error.code;
+                
+                if(status === 500){
+                    addFormError({
+                        typeError: "server",
+                        field: "any",
+                        message: "Error obteniendo datos del perfil"
+                    })
+                }
             }
         }
 

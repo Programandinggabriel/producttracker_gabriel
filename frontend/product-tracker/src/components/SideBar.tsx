@@ -1,3 +1,5 @@
+'use client'
+
 import Image from "next/image";
 
 export default function SideBar(){
@@ -17,7 +19,13 @@ export default function SideBar(){
             </button>
         </div>
 
-        <div id="drawer-navigation" className="fixed top-0 left-0 z-40 w-64 h-screen p-4 overflow-y-auto transition-transform -translate-x-full bg-neutral-primary-soft border-e border-default" tabIndex={-1} aria-labelledby="drawer-navigation-label">
+        <div 
+            id="drawer-navigation" 
+            className="fixed top-0 left-0 z-40 w-64 h-screen p-4 overflow-y-auto transition-transform -translate-x-full bg-neutral-primary-soft border-e border-default" 
+            tabIndex={-1}
+            aria-labelledby="drawer-navigation-label"
+            aria-hidden
+        >
             <div className="border-b border-default pb-4 flex items-center">
                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
                     <Image src='/tracking.png' alt="Product tracker logo" width={25} height={25}/>

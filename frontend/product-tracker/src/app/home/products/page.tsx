@@ -1,9 +1,9 @@
-import ListProducts  from '@/src/components/Products/ListProducts'
+import Manager from '@/src/components/Products/Manager'
 
 export default function Products(){
     return (
         <>
-            <ListProducts/>
+            <Manager/>
         </>
     )
 }

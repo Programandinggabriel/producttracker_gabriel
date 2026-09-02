@@ -4,6 +4,7 @@ const ebayAuth = require("./auth");
 const { Product } = require("../../models/product");
 const mapEbayProduct = require("./product-mapper");
 const { ThrowError } = require("../../errors/AppError");
+const productRemoveDuplicates = require("./product-remove-duplicates");
 
 const EBAY_API_URL = process.env.EBAY_API;
 const EBAY_MARKET_PLACE_ID = process.env.EBAY_MARKETPLACE_ID
@@ -129,7 +130,6 @@ const queryProducts = async (
     const items = data.itemSummaries || [];
 
     const products = items.map((item) => {
-        let categoryId = null;
         const ebayLeftCategoriesIds = item?.leafCategoryIds;
 
         return mapEbayProduct({
@@ -137,8 +137,12 @@ const queryProducts = async (
             category: ebayLeftCategoriesIds[0]
         })
     })
+
+    const productsWithoutDuplicates = productRemoveDuplicates(
+        products
+    )
     
-    return products
+    return productsWithoutDuplicates
 }
 
 
@@ -152,10 +156,15 @@ const getProductsByCategory = async (categoryIds, limit, offset) => {
     let baseLimit = Math.floor(limit / categoryCount);
     let remainder = limit % categoryCount;
 
+    // Offset global 0,100,200... → bloque 0,1,2...
+    const currentBlock = offset / limit;
+
     const arrayProducts = await Promise.all(
         categoryIds.map(async (id, index) => {
             const subLimit = baseLimit + (index < remainder ? 1 : 0);
-            
+            // Cada categoría avanza según la cantidad que le corresponde por bloque.
+            const subOffset = subLimit * currentBlock;
+
             if (subLimit === 0){
                 return [];
             }
@@ -165,7 +174,7 @@ const getProductsByCategory = async (categoryIds, limit, offset) => {
             const params = new URLSearchParams({
                 category_ids: id,
                 limit: String(subLimit),
-                offset: offset
+                offset: subOffset
             });
 
             let response = await ebayRequest(
@@ -213,8 +222,11 @@ const getProductsByCategory = async (categoryIds, limit, offset) => {
 
     const allProductsByCategories = arrayProducts.flat();
     const mapedProducts = allProductsByCategories.map(mapEbayProduct);
+    const productsWithoutDuplicates = productRemoveDuplicates(
+        mapedProducts
+    )
     
-    return mapedProducts
+    return productsWithoutDuplicates
 }
 
 module.exports = {

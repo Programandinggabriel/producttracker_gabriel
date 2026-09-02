@@ -265,7 +265,7 @@ export default function UpdateForm({ id }: UpdateProps) {
             </button>`
         </form>
         {isApiError
-            ? <ModalError apiError={apiError}/>
+            ? <ModalError apiError={apiError} onModalHide={() => setIsApiError(false)}/>
             : '' 
         }
     </>

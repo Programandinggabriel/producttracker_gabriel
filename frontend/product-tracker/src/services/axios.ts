@@ -30,6 +30,10 @@ api.interceptors.response.use(
     response => response,
     error => {
         if(error.response?.status === 401){
+            if(error.config.url.includes('/login')){
+                return Promise.reject(error)
+            }
+            
             localStorage.removeItem('authToken');
             window.location.href = '/login'
         }

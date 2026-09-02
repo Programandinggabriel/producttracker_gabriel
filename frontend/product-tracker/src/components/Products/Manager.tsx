@@ -155,7 +155,7 @@ export default function Manager(){
                 />
             </div>
             {isApiError && (
-                <ModalError apiError={apiError} />
+                <ModalError apiError={apiError} onModalHide={() => setIsApiError(false)}/>
             )}
         </>
     )

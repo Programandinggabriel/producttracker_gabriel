@@ -2,6 +2,7 @@
 
 import { Category, getCategories } from "@/src/services/products"
 import React, { useEffect, useState } from "react"
+import ModalError from "../ModalError";
 
 type QueryCategoryProps = {
     onCategoryChange: (category: string) => void;
@@ -11,6 +12,12 @@ type QueryCategoryProps = {
 export default function QueryCategory({ onCategoryChange, onSendQueryText }: QueryCategoryProps){
     const [categories, setCategories] = useState<Category[]>([]);
     const [query, setQuery] = useState('');
+    const [isApiError, setIsApiError] = useState(false);
+    const [apiError, setApiError] = useState<{code: String, message: String}>({
+        code : '',
+        message: ''
+    });
+
 
     useEffect(() => {
         const getApiCategories = async() => {
@@ -19,7 +26,17 @@ export default function QueryCategory({ onCategoryChange, onSendQueryText }: Que
             if(response.success){
                 setCategories(response.data || [])
             }else{
-                alert('Error obteniendo categorias')
+            const status = response.error?.status;
+            const apiError = response.error?.data.error;
+
+            setApiError({
+                code: apiError?.code ?? '',
+                message: apiError?.message ?? ''
+            })
+
+            if(status === 500){
+                setIsApiError(true)
+            }
             }
         }
         
@@ -37,6 +54,7 @@ export default function QueryCategory({ onCategoryChange, onSendQueryText }: Que
     }   
 
     return (
+        <>
         <form onSubmit={(e) => {handleSubmitForm(e)}} className="max-w-2xl mx-auto">
             <div className="flex shadow-xs rounded-base -space-x-0.5">
                 <button id="dropdown-button" data-dropdown-toggle="dropdown" type="button" className="inline-flex items-center shrink-0 z-10 text-body bg-neutral-secondary-medium box-border border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-s-base text-sm px-4 py-2.5 focus:outline-none">
@@ -63,5 +81,9 @@ export default function QueryCategory({ onCategoryChange, onSendQueryText }: Que
                 </button>
             </div>
         </form>
+        {isApiError && (
+            <ModalError apiError={apiError} onModalHide={() => setIsApiError(false)}/>
+        )}
+        </>
     )
 }

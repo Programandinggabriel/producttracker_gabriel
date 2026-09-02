@@ -60,7 +60,7 @@ export default function LoginForm(){
     }
 
 
-    const onFormSubmmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
+    const onFormSubmmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()
         let errors: { field: string }[] = [];
         const keys = Object.keys(loginFormData) as (keyof LoginData)[];

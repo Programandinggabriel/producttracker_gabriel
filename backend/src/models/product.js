@@ -68,12 +68,12 @@ const getProducts = async (
                       url
                 FROM products`;
 
-  if (sortBy && ALLOWED_SORTBY.includes(sortBy)) {
+  if (sortBy) {
     const safeOrder = ALLOWED_ORDER.includes(order?.toUpperCase())
       ? order.toUpperCase()
       : 'ASC';
-
-    query += ` ORDER BY ${sortBy} ${safeOrder}`;
+    
+    query += ` ORDER BY ${sortBy} ${safeOrder}, id ASC`;
   }
 
   if (limit !== undefined) {

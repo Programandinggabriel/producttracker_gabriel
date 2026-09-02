@@ -46,7 +46,9 @@ const getProviderToken = async (name) => {
 
 const getProviders = async () => {
     const query = `SELECT name,
-                          token
+                          token,
+                          logo,
+                          nickname
                     FROM providers 
                    WHERE active = true`;
     

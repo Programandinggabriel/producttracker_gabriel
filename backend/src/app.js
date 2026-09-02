@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require("express");
 const cors = require('cors');
 const routes = require("./routes");
@@ -23,6 +24,9 @@ startRedis()
 
 //Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+
+//Public static images
+app.use('/images', express.static(path.join(__dirname, 'public')));
 
 routes.forEach((route) => {
   app.use(route.path, route.router);

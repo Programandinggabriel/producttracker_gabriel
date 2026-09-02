@@ -16,7 +16,8 @@ const getCategoryProvider = async (id, provider) => {
                     JOIN provider_category pcat
                       ON cat.id = pcat.category_id
                    WHERE cat.id = $1
-                     AND pcat.provider = $2`;
+                     AND pcat.provider = $2
+                   ORDER BY pcat.id`;
     const values = [id, provider];
 
     const { rows } = await pool.query(query, values)

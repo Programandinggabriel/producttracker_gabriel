@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Carousel, { type Image } from "../Carousel";
 import ModalError from "../ModalError";
 import ProductDetailLoading from "./ProductDetailLoading";
+import NextImage from "next/image";
 
 type ProductDetailProps = {
     provider: string;
@@ -19,17 +20,24 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
         message: ''
     });
     
-    const [providers, setProviders] = useState<Provider[]>([]);
+    const [productProvider, setProductProvider] = useState<Provider | null>(null);
     const [product, setProduct] = useState<ItemDetailProduct | null>(null);
     const [images, setImages] = useState<Image[]>([]);
 
-    const getApiProviders = async () => {
+    const getApiProvider = async () => {
         const providers = await getProviders();
 
         if(providers.success){
             const listProviders = providers.data ?? [];
+            const findProvider = listProviders.find(prov => prov.id === provider)
 
-            setProviders(listProviders)
+            if(findProvider){
+                setProductProvider(
+                    findProvider
+                )
+            }else{
+                window.location.href = '/error/404'
+            }
         }else{
             const status = providers.error?.status;
             const apiError = providers.error?.data.error;
@@ -95,23 +103,26 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
        return images.map((img) => {
             const urlSplit = img.split('/'); 
             const lastIndex = urlSplit.length - 1;
-            const provider = providers.find((prov) => prov.id === providerId);
             
-            if(provider?.id === 'ebay'){
+            if(productProvider?.id === 'ebay'){
                 return img.replace(urlSplit[lastIndex], 's-l800.jpg')
             }
             return img
         });
     }
 
+    const getUrlLogoProvider = (urlLogo: String) => {
+        return `${process.env.NEXT_PUBLIC_API_URL}${urlLogo}`;
+    }
+
     useEffect(() => {
-        getApiProviders()
+        getApiProvider()
     }, [])
 
     useEffect(() => {
-        if(providers.length === 0) return
+        if(productProvider) return
         getApiDetailProduct()
-    }, [providers.length])
+    }, [productProvider])
 
     return(
     <> 
@@ -128,15 +139,27 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                         <Carousel images={images}/>
                         <div className="mt-10 px-4 sm:px-0 sm:mt-16 lg:mt-0">
                             <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">{product?.title ?? ""}</h1>
-                            <a 
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                href={product?.url} 
-                                className="inline-flex font-medium items-center text-fg-brand hover:underline"
-                            >
-                                Ver producto
-                                <svg className="w-4 h-4 ms-2 rtl:rotate-[270deg]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"/></svg>
-                            </a>
+                            <div className="flex flex-row">
+                                <a 
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={product?.url} 
+                                    className="inline-flex font-medium items-center text-fg-brand hover:underline"
+                                >
+                                    Ver producto
+                                    <svg className="w-4 h-4 ms-2 rtl:rotate-[270deg]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"/></svg>
+                                </a>
+                                <div className="inline-flex rounded-fill w-20 h-20 mx-auto">
+                                    <NextImage
+                                        src={getUrlLogoProvider(productProvider?.logo ?? '')}
+                                        alt={`logo-${productProvider?.logo}`}
+                                        width={75}
+                                        height={75}
+                                        style={{ width: 'auto', height: 'auto' }}
+                                        unoptimized
+                                    />
+                                </div>
+                            </div>
                             <div className="mt-3">
                                 <h2 className="sr-only">Información de el producto</h2>
                                 <p className="text-3xl text-gray-900">{`$${product?.price ?? ""} ${product?.currency ?? ""}`}</p>

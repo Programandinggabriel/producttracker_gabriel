@@ -8,6 +8,7 @@ module.exports = {
   allowedDevOrigins: ['192.168.1.3'],
   images: {
     remotePatterns: [
+      new URL(`${process.env.NEXT_PUBLIC_API_URL}/images/**`),
       new URL('https://i.ebayimg.com/images/**'),
       new URL('https://cdn.dummyjson.com/product-images/**')
     ],

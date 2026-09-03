@@ -147,7 +147,11 @@ export default function Manager(){
                 onCategoryChange={(category) => {handleChangeCategory(category)}} 
                 onSendQueryText={(query) => {handleSendQueryText(query)}}
             />
-            <ListProducts products={products} isLoading={isLoading}/>
+            <ListProducts 
+                products={products} 
+                providers={providers}
+                isLoading={isLoading}
+            />
             <div className="flex flex-row justify-center mb-6">
                 <Pagination 
                     paginateMetaData={meta} 

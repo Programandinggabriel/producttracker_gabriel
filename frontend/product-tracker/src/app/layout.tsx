@@ -1,5 +1,5 @@
 import FlowbiteInitializer from "../components/Flowbite/FlowbiteInitializer";
-import "./globals.css";
+import "../styles/globals.css";
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

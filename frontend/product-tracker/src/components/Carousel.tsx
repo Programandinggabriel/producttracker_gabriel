@@ -72,7 +72,7 @@ export default function Carousel({ images }:CarouselProps){
                     sizes="(max-width: 768px) 100vw, 80vw"
                     placeholder="blur"
                     blurDataURL={shimmerB64}
-                    className="object-cover transition-opacity duration-300"
+                    className="object-contain transition-opacity duration-300"
                 />
                 {activeIndex > 0 
                     ? <button
@@ -149,7 +149,7 @@ export default function Carousel({ images }:CarouselProps){
                                         alt={image.alt ?? ""}
                                         fill
                                         sizes="80px"
-                                        className="object-cover"
+                                        className="object-contain"
                                         placeholder="blur"
                                         blurDataURL={shimmerB64}
                                         loading="eager"

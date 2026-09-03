@@ -10,6 +10,7 @@ module.exports = {
     remotePatterns: [
       new URL(`${process.env.NEXT_PUBLIC_API_URL}/images/**`),
       new URL('https://i.ebayimg.com/images/**'),
+      new URL('https://*.cloudfront.net/**'),
       new URL('https://cdn.dummyjson.com/product-images/**')
     ],
   }

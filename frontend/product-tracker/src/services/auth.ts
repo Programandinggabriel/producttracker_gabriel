@@ -272,12 +272,12 @@ export const changePassword =  async (oldPassword: String, newPassword: String) 
     }
 }
 
-type NewFavorite = {
+export type Favorite = {
     provider: String;
     external_id: String;
 }
 
-type ProductFavorite = ItemProduct & {
+export type ProductFavorite = ItemProduct & {
     id: String
 }
 
@@ -299,7 +299,7 @@ export const getFavorite = async() => {
     }
 }
 
-export const createFavorite = async(formData: NewFavorite) => {
+export const createFavorite = async(formData: Favorite) => {
     try{
         const payload = {
             provider: formData.provider,
@@ -322,9 +322,9 @@ export const createFavorite = async(formData: NewFavorite) => {
     }
 }
 
-export const deleteFavorite = async(id: String) => {
+export const deleteFavorite = async(provider: String, external_id: String) => {
     try{ 
-        const { data } = await api.delete<Delete>(`/users/favorites/product/${id}`);
+        const { data } = await api.delete<Delete>(`/users/favorites/product/${provider}/${external_id}`);
         
         return {
             success: true,

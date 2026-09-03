@@ -6,6 +6,8 @@ import Carousel, { type Image } from "../Carousel";
 import ModalError from "../ModalError";
 import ProductDetailLoading from "./ProductDetailLoading";
 import NextImage from "next/image";
+import { createFavorite, deleteFavorite, type Favorite } from "@/src/services/auth";
+import ToggleHeart from "./ToggleHeart";
 
 type ProductDetailProps = {
     provider: string;
@@ -24,13 +26,16 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
     const [product, setProduct] = useState<ItemDetailProduct | null>(null);
     const [images, setImages] = useState<Image[]>([]);
 
+    const [isProductFav, setIsProductFav] = useState<boolean>(false);
+    const [isInputFavDisabled, setIsInputFavDisabled] = useState<boolean>(false);
+
     const getApiProvider = async () => {
         const providers = await getProviders();
 
         if(providers.success){
             const listProviders = providers.data ?? [];
             const findProvider = listProviders.find(prov => prov.id === provider)
-
+            
             if(findProvider){
                 setProductProvider(
                     findProvider
@@ -60,7 +65,7 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
             const data = response.data;
             const images = data?.images ?? [];
 
-            const imagesModified = modifiedImagesProduct(data?.provider_id ?? "", images)
+            const imagesModified = modifiedImagesProduct(images)
 
             setProduct({
                 provider_id: data?.provider_id ?? "",
@@ -70,7 +75,8 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                 currency: data?.currency ?? "",
                 description: data?.description ?? "",
                 url: data?.url ?? "",
-                images: imagesModified
+                images: imagesModified,
+                is_favorite: data?.is_favorite ?? false
             })
 
             setImages(imagesModified.map((img, index) => {
@@ -80,6 +86,8 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                     src: img
                 }
             }))
+
+            setIsProductFav(data?.is_favorite ?? false)
 
         }else{
             const status = response.error?.status;
@@ -99,13 +107,60 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
         setIsLoading(false)
     }
 
-    const modifiedImagesProduct = (providerId: string, images: string[]) => {
-       return images.map((img) => {
-            const urlSplit = img.split('/'); 
-            const lastIndex = urlSplit.length - 1;
+    const createApiFavorite = async (favorite: Favorite) => {
+        setIsInputFavDisabled(true)
+        const newFavorite = await createFavorite(favorite);
+
+        if(newFavorite.success){
+            setIsProductFav(true)
+        }else{
+            const status = newFavorite.error?.status;
+            const apiError = newFavorite?.error?.data.error;
+
+            setApiError({
+                code: apiError?.code ?? '',
+                message: apiError?.message ?? ''
+            })
+
+            if(status === 409 && apiError?.code === 'FAVORITE_ALREADY_EXISTS'){
+                
+            }else if(status === 400 || status === 500){
+                setIsApiError(true)
+            }
+        }
+        setIsInputFavDisabled(false)
+    }
+
+    const deleteApiFavorite = async (favorite: Favorite) => {
+        setIsInputFavDisabled(true)
+        const deleted = await deleteFavorite(favorite.provider, favorite.external_id);
+
+        if(deleted.success){
+            setIsProductFav(false)
+        }else{
+            const status = deleted.error?.status;
+            const apiError = deleted?.error?.data.error;
+
+            setApiError({
+                code: apiError?.code ?? '',
+                message: apiError?.message ?? ''
+            })
+
+            if(status === 409 && apiError?.code === 'FAVORITE_ALREADY_EXISTS'){
+                
+            }else if(status === 400 || status === 500){
+                setIsApiError(true)
+            }
+        }
+        setIsInputFavDisabled(false)
+    }
+
+    const modifiedImagesProduct = (images: string[]) => {
+       return images.map((img) => { 
+            const regularExpresion = /s-l\d+\.(?:jpg|jpeg|png|webp)$/i;
             
             if(productProvider?.id === 'ebay'){
-                return img.replace(urlSplit[lastIndex], 's-l800.jpg')
+                return img.replace(regularExpresion, 's-l800.jpg')
             }
             return img
         });
@@ -115,12 +170,26 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
         return `${process.env.NEXT_PUBLIC_API_URL}${urlLogo}`;
     }
 
+    const handleClickFavorite = (provider: String, external_id: String) => {
+        if(isProductFav){
+            deleteApiFavorite({
+                provider: provider,
+                external_id: external_id
+            })
+        }else{
+            createApiFavorite({
+                provider: provider,
+                external_id: external_id
+            })
+        }
+    }
+
     useEffect(() => {
         getApiProvider()
     }, [])
 
     useEffect(() => {
-        if(productProvider) return
+        if(!productProvider) return
         getApiDetailProduct()
     }, [productProvider])
 
@@ -160,9 +229,16 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                                     />
                                 </div>
                             </div>
-                            <div className="mt-3">
+                            <div className="flex flex-row mt-3">
                                 <h2 className="sr-only">Información de el producto</h2>
-                                <p className="text-3xl text-gray-900">{`$${product?.price ?? ""} ${product?.currency ?? ""}`}</p>
+                                <p className="inline-flex text-3xl text-gray-900">{`$${product?.price ?? ""} ${product?.currency ?? ""}`}</p>
+                                <div className="inline-flex ml-auto">                                
+                                    <ToggleHeart
+                                        value={isProductFav}
+                                        disabled={isInputFavDisabled}
+                                        onChange={() => handleClickFavorite(product?.provider_id ?? '', product?.product_id ?? '')}
+                                    />
+                                </div>
                             </div>
                             
                             <div className="mt-6">
@@ -175,13 +251,6 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
 
                             <div className="mt-6">
                                 <div className="mt-10 flex flex-col">
-                                    <button 
-                                        type="button" 
-                                        className="inline-flex items-center text-body bg-neutral-primary-soft border border-default hover:bg-neutral-secondary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary-soft shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none"
-                                    >
-                                        <span className="mr-3">Agregar a favoritos</span>
-                                        ❤️
-                                    </button>
                                     <button
                                         type="button" 
                                         className="mt-4 inline-flex items-center text-body bg-neutral-primary-soft border border-default hover:bg-neutral-secondary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary-soft shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none"

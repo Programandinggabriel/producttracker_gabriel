@@ -108,12 +108,11 @@ export default function Manager(){
     }, [])
 
     const modifiedThumbnailProduct = (providerId: string, thumbnail: string) => {
-        const urlSplit = thumbnail.split('/');
-        const lastIndex = urlSplit.length - 1;
+        const regularExpresion = /s-l\d+\.(?:jpg|jpeg|png|webp)$/i;
         const provider = providers.find((prov) => prov.id === providerId);
 
         if(provider?.id === 'ebay'){
-            return thumbnail.replace(urlSplit[lastIndex], 's-l300.jpg')
+            return thumbnail.replace(regularExpresion, 's-l300.jpg')
         }
 
         return thumbnail

@@ -162,14 +162,20 @@ async function findProduct(provider, externalId) {
         let wasFound = false;
         for(const batch of matchKeys){
             for(const key of batch){
-                const values = await redisClient.hVals(key)
-                const products = JSON.parse(values)
-                
-                const productFilter = products.filter((product) => {
+                const values = await redisClient.hVals(key);
+                const products = values.map(str => {
+                    try{
+                        return JSON.parse(str);
+                    }catch(error){
+                        logRedisError(error)
+                        return null;
+                    }
+                }).filter(p => p !== null);
+
+                const productFind = products.find((product) => {
                     return product.providerId === provider &&
-                           product.productId === externalId
+                        product.productId === externalId;
                 });
-                const productFind = productFilter[0];
                 
                 if(productFind){
                     product = productFind

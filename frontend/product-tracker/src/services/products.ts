@@ -19,7 +19,8 @@ export type ItemDetailProduct ={
     price: string;
     currency: string;
     url: string;
-    images: Array<string>
+    images: Array<string>;
+    is_favorite: boolean;
 }
 
 export type PaginationMeta = {

@@ -1,6 +1,7 @@
 import { AxiosError } from "axios";
 import { LoginData, ProfileData, RegisterData, UpdateData } from "../types/auth";
 import { api, ApiError } from "./axios"
+import { ItemProduct } from "./products";
 
 //Preview role
 export type Role = {
@@ -263,6 +264,74 @@ export const changePassword =  async (oldPassword: String, newPassword: String) 
         }
     }catch(error){
         const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+type NewFavorite = {
+    provider: String;
+    external_id: String;
+}
+
+type ProductFavorite = ItemProduct & {
+    id: String
+}
+
+export const getFavorite = async() => {
+    try{
+        const { data } = await api.get<ProductFavorite[]>('/users/favorites/product');
+        
+        return {
+            success: true,
+            data
+        };
+    }catch(error){
+        const err = error as AxiosError<ApiError>;
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const createFavorite = async(formData: NewFavorite) => {
+    try{
+        const payload = {
+            provider: formData.provider,
+            external_id: formData.external_id
+        }
+        
+        const { data } = await api.post<ProductFavorite>('/users/favorites/product', payload);
+        
+        return {
+            success: true,
+            data
+        };
+    }catch(error){
+        const err = error as AxiosError<ApiError>;
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const deleteFavorite = async(id: String) => {
+    try{ 
+        const { data } = await api.delete<Delete>(`/users/favorites/product/${id}`);
+        
+        return {
+            success: true,
+            data
+        };
+    }catch(error){
+        const err = error as AxiosError<ApiError>;
         
         return {
             success: false,

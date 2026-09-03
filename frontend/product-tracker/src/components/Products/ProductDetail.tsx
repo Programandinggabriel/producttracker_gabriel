@@ -152,11 +152,17 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
 
                             <div className="mt-6">
                                 <div className="mt-10 flex flex-col">
-                                    <button type="button" className="py-3 rounded-md flex items-center justify-start hover:bg-gray-100">
+                                    <button 
+                                        type="button" 
+                                        className="inline-flex items-center text-body bg-neutral-primary-soft border border-default hover:bg-neutral-secondary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary-soft shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none"
+                                    >
                                         <span className="mr-3">Agregar a favoritos</span>
                                         ❤️
                                     </button>
-                                    <button type="button" className="py-3 rounded-md flex items-center justify-start hover:bg-gray-100">
+                                    <button
+                                        type="button" 
+                                        className="mt-4 inline-flex items-center text-body bg-neutral-primary-soft border border-default hover:bg-neutral-secondary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary-soft shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none"
+                                    >
                                         <span className="mr-3">Notificame cuando baje de precio</span>
                                         🔔
                                     </button>

@@ -1,5 +1,6 @@
 const dbProduct = require('../models/product');
 const dbProvider = require('../models/provider')
+const dbUser = require('../models/user')
 
 const productCacheService = require('./cache/product-cache');
 const { ThrowError } = require("../errors/AppError");
@@ -207,6 +208,7 @@ const getProductsByCategory = async (
 };
 
 const getProductById = async (
+    userId,
     providerID,
     externalId
 ) => {
@@ -224,16 +226,20 @@ const getProductById = async (
     if(provider.rowCount === 0){
         throw new ThrowError(
             'Provider inactive or dont exists',
-             400,
+             422,
             'BAD_REQUEST'
         )
     }
 
+    const isUserFavorite = await dbUser.getDbUserProductFavorite(userId, providerID, externalId);
+    const isFavorite = isUserFavorite ? true : false;
 
     const productDb = await dbProduct.getProduct(externalId, providerID);
     if(productDb){
         const images = await dbProduct.getProductImages(productDb.id);
+        
         productDb.images = images.map(img => img.image)
+        productDb.isFavorite = isFavorite
 
         return mapDetailProduct(productDb)
     }
@@ -249,6 +255,7 @@ const getProductById = async (
         delete externalProduct.product_id
 
         externalProduct.images = images.map(img => img.image)
+        externalProduct.isFavorite = isFavorite
         
         return mapDetailProduct(externalProduct)
     }
@@ -258,12 +265,14 @@ const getProductById = async (
         externalId
     );
     if(productCache){
+        productCache.isFavorite = isFavorite
         return mapDetailProduct(productCache)
     }
 
     const result = await objProvider.module.getProductsByIds([externalId]);
     const product = result.flat()[0]
     if(product){
+        product.isFavorite = isFavorite
         return mapDetailProduct(product)
     }
 

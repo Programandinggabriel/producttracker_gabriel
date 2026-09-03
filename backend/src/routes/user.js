@@ -95,7 +95,7 @@ router.delete(
 );
 
 router.delete(
-    "/favorites/product/:idProd", 
+    "/favorites/product/:provider/:externalId", 
     auth,
     permission('user_favorite:delete'),
     controllers.deleteProductFavorite

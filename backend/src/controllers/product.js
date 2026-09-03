@@ -68,8 +68,10 @@ const getProductsByCategory = async (req, res, next) => {
 const getProductById = async (req, res, next) => {
      try{
         const { provider, externalId } = req.params;
-        
+        const userId = req.user.id;
+
         const product = await productService.getProductById(
+            userId,
             provider,
             externalId
         )

@@ -152,11 +152,14 @@ const getProductFavorite = async (req, res, next) => {
 const deleteProductFavorite = async(req, res, next) => {
   try{
     const idUser = req.user.id;
-    const { idProd } = req.params;
+    const { provider, externalId } = req.params;
+    const deleted = await userService.deleteProductFavorite(
+      idUser, 
+      provider, 
+      externalId
+    )
     
-    const deleted = await userService.deleteProductFavorite(idUser, idProd)
-    
-    res.status(200).json({ message: `Product favorite with ID: ${idProd} deleted` });
+    res.status(200).json({ message: `Product favorite was deleted` });
   }catch(error){
     next(error)
   }

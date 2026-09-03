@@ -19,7 +19,8 @@ function mapDetailProduct(product){
         price: product.price,
         currency: product.currency,
         url: product.url,
-        images: product.images
+        images: product.images,
+        is_favorite: product.isFavorite
     }
 }
 

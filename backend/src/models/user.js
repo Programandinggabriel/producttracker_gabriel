@@ -231,7 +231,8 @@ const getDbUserProductsFavorites = async (idUser) => {
                     FROM users_product_favorite ufav
                    JOIN external_products eprods
                      ON ufav.product_id = eprods.id
-                   WHERE ufav.user_id = $1`;
+                   WHERE ufav.user_id = $1
+                   ORDER BY ufav.created DESC`;
     
     const values = [idUser]
     const { rows } = await pool.query(query, values)

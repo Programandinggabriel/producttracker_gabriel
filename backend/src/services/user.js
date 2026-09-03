@@ -278,7 +278,7 @@ const resetPassword = async (email, newPassword) => {
     if(!user){
         throw new ThrowError(
             "User not found. No account is associated with the provided email.",
-            404,
+            422,
             "USER_NOT_FOUND",
             {
                 email: email
@@ -373,7 +373,7 @@ const createProductFavorite = async (idUser, provider, idProduct) => {
     if(resultProvider.rowCount === 0){
         throw new ThrowError(
             "Provider doesnt exist", 
-            404,
+            422,
             "PROVIDER_NOT_FOUND",
             {
                 provider: provider
@@ -393,8 +393,8 @@ const createProductFavorite = async (idUser, provider, idProduct) => {
     if(existsProductFav){
         throw new ThrowError(
             "Product favorite already exists", 
-            400,
-            "BAD_REQUEST",
+            409,
+            "FAVORITE_ALREADY_EXISTS",
             {
                 product: existsProductFav.id
             }
@@ -410,7 +410,7 @@ const createProductFavorite = async (idUser, provider, idProduct) => {
     if(!external_product){
         throw new ThrowError(
             "Incorrect Product ID", 
-            404,
+            422,
             "PRODUCT_NOT_FOUND",
             {
                 product: idProduct
@@ -442,24 +442,57 @@ const getProductFavorite = async (idUser) => {
             
             product.images = arrayImages.map(img => img.image)
 
-            return {
-                id: product.id,
-                ...mapPreviewProduct(product)
-            }
+            return mapPreviewProduct(product)
         })
     )
 
     return productsFavorite
 }
 
-const deleteProductFavorite = async (idUser, idProd) => {
+const deleteProductFavorite = async (
+    idUser, 
+    providerID,
+    externalId
+) => {
+    if(!providerID || !externalId){
+        throw new ThrowError(
+            'provider or external id is missing',
+            400,
+            'BAD_REQUEST'
+        )
+    }
+
+    const provider = await dbProvider.getProvider(providerID);
+
+    if(provider.rowCount === 0){
+        throw new ThrowError(
+            'Provider inactive or dont exists',
+             422,
+            'BAD_REQUEST'
+        )
+    }
+
+    const externalProduct = await dbProduct.getExternalProduct(
+        providerID,
+        externalId
+    )
+
+    if(externalProduct.rowCount === 0){
+        throw new ThrowError(
+            'Product id dont exists',
+             422,
+            'BAD_REQUEST'
+        )
+    }
+
+    const idProd = externalProduct.product.id;
     const existsFav = await dbUser.getDbFavorite(idUser, idProd);
 
     if(!existsFav){
         throw new ThrowError(
             "Product favorite doesnt exists", 
             404,
-            "PRODUCT_NOT_FOUND",
+            "FAVORITE_NOT_FOUND",
             {
                 product: idProd
             }
@@ -573,7 +606,7 @@ const createPriceAlert = async (
     if(resultProvider.rowCount === 0){
         throw new ThrowError(
             "Provider doesnt exist", 
-            404,
+            422,
             "PROVIDER_NOT_FOUND",
             {
                 provider: provider
@@ -595,8 +628,8 @@ const createPriceAlert = async (
     if(existsPriceAlert){
         throw new ThrowError(
             "Price alert already exists", 
-            400,
-            "BAD_REQUEST",
+            409,
+            "PRICE_ALERT_ALREADY_EXISTS",
             {
                 alert: existsPriceAlert.id
             }
@@ -612,7 +645,7 @@ const createPriceAlert = async (
     if(!external_product){
         throw new ThrowError(
             "Incorrect Product ID", 
-            404,
+            422,
             "PRODUCT_NOT_FOUND",
             {
                 product: idProduct

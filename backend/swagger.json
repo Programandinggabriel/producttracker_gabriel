@@ -348,13 +348,19 @@
         }
       }
     },
-    "/users/favorites/product/{id}": {
+    "/users/favorites/product/{provider}/{productId}": {
       "delete": {
         "tags": ["Users"],
         "description": "Eliminar producto favorito del usuario",
         "parameters": [
           {
-            "name": "id",
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "externalId",
             "in": "path",
             "required": true,
             "type": "string"

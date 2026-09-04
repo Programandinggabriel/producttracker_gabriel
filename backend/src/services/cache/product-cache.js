@@ -106,9 +106,20 @@ const getQueryProducts = async (query, limit, offset) => {
 
     const results = await Promise.all(providerPromises);
     
-    const previewData = results.flat().map((product) => {
-        return mapPreviewProduct(product)
-    })
+    const previewData = await Promise.all(
+        results.flat().map(async (product) => {
+            const provider = await dbProvider.getProvider(product.providerId)
+            const objProvider = provider.provider;
+
+            product.provider = {
+                id: objProvider.name,
+                logo: objProvider.logo,
+                nickname: objProvider.nickname
+            }
+
+            return mapPreviewProduct(product)
+        })
+    )
 
     return previewData
 }
@@ -178,9 +189,20 @@ const getProductsByCategory = async (idCat, limit, offset) => {
 
     const results = await Promise.all(providerPromises);
 
-    const previewData = results.flat().map((product) => {
-        return mapPreviewProduct(product)
-    })
+    const previewData = await Promise.all(
+        results.flat().map(async (product) => {
+            const provider = await dbProvider.getProvider(product.providerId);
+            const objProvider = provider.provider;
+
+            product.provider = {
+                id: objProvider.name,
+                logo: objProvider.logo,
+                nickname: objProvider.nickname
+            }
+
+            return mapPreviewProduct(product)
+        })
+    )
 
     return previewData
 }

@@ -7,7 +7,7 @@ const getProviders = async () => {
         return {
             id: prov.name,
             logo: prov.logo,
-            name: prov.nickname
+            nickname: prov.nickname
         }
     })
 

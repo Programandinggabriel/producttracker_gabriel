@@ -1,14 +1,13 @@
 'use client'
 
-import { Provider, type ItemProduct } from "@/src/services/products"
+import { type ItemProduct } from "@/src/services/products"
 import Image from "next/image";
 
 type ItemProductProps = {
     product: ItemProduct;
-    provider: Provider;
 }
 
-export default function Product({ product, provider }: ItemProductProps){
+export default function Product({ product }: ItemProductProps){
     const thubnailImage = product.thumbnail;
     const shimmerB64 = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZThlOGU4Ii8+PC9zdmc+"
 
@@ -34,7 +33,7 @@ export default function Product({ product, provider }: ItemProductProps){
             </div>
             <div>
                 <a
-                    href={`/home/products/${encodeURIComponent(product.provider_id)}/${encodeURIComponent(product.product_id)}`}
+                    href={`/home/products/${encodeURIComponent(product.provider.id)}/${encodeURIComponent(product.product_id)}`}
                 >
                     <h5 className="text-md text-heading font-semibold tracking-tight">{product.title}</h5>
                 </a>
@@ -50,8 +49,8 @@ export default function Product({ product, provider }: ItemProductProps){
                     </a>
                     <div className="inline-flex rounded-fill ml-auto w-9 h-9">
                         <Image
-                            src={getUrlLogoProvider(provider.logo)}
-                            alt={`logo-${provider.id}`}
+                            src={getUrlLogoProvider(product.provider.logo)}
+                            alt={`logo-${product.provider.id}`}
                             width={50}
                             height={50}
                             style={{ width: 'auto', height: 'auto' }}

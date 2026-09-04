@@ -1,6 +1,6 @@
 'use client'
 
-import { getProductById, type Provider, type ItemDetailProduct, getProviders } from "@/src/services/products";
+import { getProductById, type ItemDetailProduct, getProviders } from "@/src/services/products";
 import { useEffect, useState } from "react";
 import Carousel, { type Image } from "../Carousel";
 import ModalError from "../ModalError";
@@ -22,41 +22,11 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
         message: ''
     });
     
-    const [productProvider, setProductProvider] = useState<Provider | null>(null);
     const [product, setProduct] = useState<ItemDetailProduct | null>(null);
     const [images, setImages] = useState<Image[]>([]);
 
     const [isProductFav, setIsProductFav] = useState<boolean>(false);
     const [isInputFavDisabled, setIsInputFavDisabled] = useState<boolean>(false);
-
-    const getApiProvider = async () => {
-        const providers = await getProviders();
-
-        if(providers.success){
-            const listProviders = providers.data ?? [];
-            const findProvider = listProviders.find(prov => prov.id === provider)
-            
-            if(findProvider){
-                setProductProvider(
-                    findProvider
-                )
-            }else{
-                window.location.href = '/error/404'
-            }
-        }else{
-            const status = providers.error?.status;
-            const apiError = providers.error?.data.error;
-
-            setApiError({
-                code: apiError?.code ?? '',
-                message: apiError?.message ?? ''
-            })
-
-            if(status === 500){
-                setIsApiError(true)
-            }
-        }
-    }
 
     const getApiDetailProduct = async () => {
         const response = await getProductById(provider, id)
@@ -68,7 +38,6 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
             const imagesModified = modifiedImagesProduct(images)
 
             setProduct({
-                provider_id: data?.provider_id ?? "",
                 product_id: data?.product_id ?? "",
                 title: data?.title ?? "",
                 price: data?.price ?? "",
@@ -76,6 +45,7 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                 description: data?.description ?? "",
                 url: data?.url ?? "",
                 images: imagesModified,
+                provider: data?.provider ?? { id: '', logo: '', nickname: '' },
                 is_favorite: data?.is_favorite ?? false
             })
 
@@ -159,7 +129,7 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
        return images.map((img) => { 
             const regularExpresion = /s-l\d+\.(?:jpg|jpeg|png|webp)$/i;
             
-            if(productProvider?.id === 'ebay'){
+            if(product?.provider?.id === 'ebay'){
                 return img.replace(regularExpresion, 's-l800.jpg')
             }
             return img
@@ -185,13 +155,8 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
     }
 
     useEffect(() => {
-        getApiProvider()
-    }, [])
-
-    useEffect(() => {
-        if(!productProvider) return
         getApiDetailProduct()
-    }, [productProvider])
+    }, [])
 
     return(
     <> 
@@ -220,8 +185,8 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                                 </a>
                                 <div className="inline-flex rounded-fill w-20 h-20 mx-auto">
                                     <NextImage
-                                        src={getUrlLogoProvider(productProvider?.logo ?? '')}
-                                        alt={`logo-${productProvider?.logo}`}
+                                        src={getUrlLogoProvider(product?.provider?.logo ?? '')}
+                                        alt={`logo-${product?.provider?.logo}`}
                                         width={75}
                                         height={75}
                                         style={{ width: 'auto', height: 'auto' }}
@@ -236,7 +201,7 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                                     <ToggleHeart
                                         value={isProductFav}
                                         disabled={isInputFavDisabled}
-                                        onChange={() => handleClickFavorite(product?.provider_id ?? '', product?.product_id ?? '')}
+                                        onChange={() => handleClickFavorite(product?.provider.id ?? '', product?.product_id ?? '')}
                                     />
                                 </div>
                             </div>

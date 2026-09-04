@@ -277,9 +277,7 @@ export type Favorite = {
     external_id: String;
 }
 
-export type ProductFavorite = ItemProduct & {
-    id: String
-}
+export type ProductFavorite = ItemProduct;
 
 export const getFavorite = async() => {
     try{

@@ -1,29 +1,17 @@
 'use client'
 
-import { Provider, type ItemProduct } from "@/src/services/products"
+import {type ItemProduct } from "@/src/services/products"
 import Product from "./Product";
 import { useState } from "react";
 import ProductLoading from "./ProductLoading";
 
 type ListProductsProps = {
     products: ItemProduct[];
-    providers: Provider[];
     isLoading: Boolean;
 }
 
-export default function ListProducts({ products, providers, isLoading }:ListProductsProps){
+export default function ListProducts({ products, isLoading }:ListProductsProps){
     const [cardsLoadingQty, setCardsLoadingQty] = useState(20);
-    
-    const getProductProvider = (product: ItemProduct) => {
-        const provider = 
-            providers.find(prov => prov.id === product.provider_id) ?? {
-                id: '',
-                name: '',
-                logo: ''
-            };
-
-            return provider
-    }
     
     return (
         <>
@@ -38,13 +26,10 @@ export default function ListProducts({ products, providers, isLoading }:ListProd
                 )}
                 {
                     products.map((product, index) => {
-                        const provider = getProductProvider(product);
-                        
                         return (
                             <Product 
                                 key={index} 
-                                product={product} 
-                                provider={provider}
+                                product={product}
                             />
                         )
                     })

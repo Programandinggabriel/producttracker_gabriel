@@ -73,7 +73,7 @@ export default function ListFavorites () {
         <>
             <div className="flex flex-col gap-4 mx-auto h-[650] overflow-y-auto p-4">
                 {userFavorites.map((favorite, index) => {
-                    const alt = `favorite-thumbnail-${favorite.provider_id}-${favorite.product_id}`
+                    const alt = `favorite-thumbnail-${favorite.provider.id}-${favorite.product_id}`
                     return (
                         <div
                             key={index}
@@ -91,14 +91,14 @@ export default function ListFavorites () {
                                     />
                                 </div>
                                 <div className="p-5">
-                                    <a href={`/home/products/${encodeURIComponent(favorite.provider_id)}/${encodeURIComponent(favorite.product_id)}`}>
+                                    <a href={`/home/products/${encodeURIComponent(favorite.provider.id)}/${encodeURIComponent(favorite.product_id)}`}>
                                         {favorite.title}
                                     </a>
                                     <p className="mt-3">{`$${favorite.price} ${favorite.currency}`}</p>
                                 </div>
                                 <div className="ml-auto mt-9">
                                     <svg 
-                                        onClick={(e) => handleClickRemoveFavorite(favorite.provider_id, favorite.product_id)}
+                                        onClick={(e) => handleClickRemoveFavorite(favorite.provider.id, favorite.product_id)}
                                         xmlns="http://www.w3.org/2000/svg" 
                                         fill="none" 
                                         viewBox="0 0 24 24" 

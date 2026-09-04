@@ -3,23 +3,23 @@ import { api, ApiError } from "./axios";
 
 export type ItemProduct = {
     product_id: string;
-    provider_id: string;
     title: string;
     price: string;
     currency: string;
     url: string;
     thumbnail: string;
+    provider: Provider;
 }
 
 export type ItemDetailProduct ={
     product_id: string;
-    provider_id: string;
     title: string;
     description: string;
     price: string;
     currency: string;
     url: string;
     images: Array<string>;
+    provider: Provider;
     is_favorite: boolean;
 }
 
@@ -39,7 +39,7 @@ type Response = {
 export type Provider = {
     id: string;
     logo: string;
-    name: string;
+    nickname: string;
 }
 
 

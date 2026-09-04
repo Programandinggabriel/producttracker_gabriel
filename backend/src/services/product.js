@@ -37,9 +37,17 @@ const getProducts = async (
     const previewData = await Promise.all(
         allProducts.map(
             async (product) => {
+                const provider = await dbProvider.getProvider(product.providerId);
+                const objProvider = provider.provider;
                 const arrayImgs = await dbProduct.getProductImages(product.id)
-                product.images = arrayImgs.map(img => img.image)
                 
+                product.images = arrayImgs.map(img => img.image)
+                product.provider = {
+                    id: objProvider.name,
+                    logo: objProvider.logo,
+                    nickname: objProvider.nickname
+                }
+
                 return mapPreviewProduct(product)
             }
         )
@@ -239,6 +247,11 @@ const getProductById = async (
         const images = await dbProduct.getProductImages(productDb.id);
         
         productDb.images = images.map(img => img.image)
+        productDb.provider = {
+            id: objProvider.name,
+            logo: objProvider.logo,
+            nickname: objProvider.nickname
+        }
         productDb.isFavorite = isFavorite
 
         return mapDetailProduct(productDb)
@@ -255,6 +268,11 @@ const getProductById = async (
         delete externalProduct.product_id
 
         externalProduct.images = images.map(img => img.image)
+        externalProduct.provider = {
+            id: objProvider.name,
+            logo: objProvider.logo,
+            nickname: objProvider.nickname
+        }
         externalProduct.isFavorite = isFavorite
         
         return mapDetailProduct(externalProduct)
@@ -265,6 +283,11 @@ const getProductById = async (
         externalId
     );
     if(productCache){
+        productCache.provider = {
+            id: objProvider.name,
+            logo: objProvider.logo,
+            nickname: objProvider.nickname
+        }
         productCache.isFavorite = isFavorite
         return mapDetailProduct(productCache)
     }
@@ -272,7 +295,13 @@ const getProductById = async (
     const result = await objProvider.module.getProductsByIds([externalId]);
     const product = result.flat()[0]
     if(product){
+        product.provider = {
+            id: objProvider.name,
+            logo: objProvider.logo,
+            nickname: objProvider.nickname
+        }
         product.isFavorite = isFavorite
+        
         return mapDetailProduct(product)
     }
 

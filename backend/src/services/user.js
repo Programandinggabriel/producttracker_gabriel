@@ -428,19 +428,29 @@ const createProductFavorite = async (idUser, provider, idProduct) => {
         idUser
     );
 
-    return {
-        id: newProduct.id,
-        ...mapPreviewProduct(external_product)
+    external_product.provider = {
+        id: objProvider.name,
+        logo: objProvider.logo,
+        nickname: objProvider.nickname
     }
+
+    return mapPreviewProduct(external_product)
 }
 
 const getProductFavorite = async (idUser) => {
     const allUserFavorites = await dbUser.getDbUserProductsFavorites(idUser);
     const productsFavorite = await Promise.all(
         allUserFavorites.map(async (product) => {
+            const provider = await dbProvider.getProvider(product.providerId);
+            const objProvider = provider.provider;
             const arrayImages = await dbProduct.getExternalProductImages(product.id);
-            
+
             product.images = arrayImages.map(img => img.image)
+            product.provider = {
+                id: objProvider.name,
+                logo: objProvider.logo,
+                nickname: objProvider.nickname
+            }
 
             return mapPreviewProduct(product)
         })

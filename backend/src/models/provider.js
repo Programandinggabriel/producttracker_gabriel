@@ -13,7 +13,9 @@ const addExtraData = (provider) => {
 
 const getProvider = async(name) => {
     const query = `SELECT name,
-                          token
+                          token,
+                          logo,
+                          nickname
                     FROM providers 
                    WHERE name = $1
                    AND active = true`;

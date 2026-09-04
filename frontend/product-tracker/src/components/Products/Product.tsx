@@ -19,17 +19,19 @@ export default function Product({ product }: ItemProductProps){
     <>
         <div className="w-full max-w-[300px] bg-neutral-primary-soft p-6 border border-default rounded-base shadow-xs">
             <div className="relative mx-auto w-[120px] h-[120px] mb-6"> 
-                <Image
-                    key={thubnailImage}
-                    src={thubnailImage} 
-                    alt="product" 
-                    fill
-                    sizes="120px"
-                    priority
-                    placeholder="blur"
-                    blurDataURL={shimmerB64}   
-                    className="rounded-base object-contain"  
-                />
+                {thubnailImage && (
+                    <Image
+                        key={thubnailImage}
+                        src={thubnailImage} 
+                        alt="product" 
+                        fill
+                        sizes="120px"
+                        priority
+                        placeholder="blur"
+                        blurDataURL={shimmerB64}   
+                        className="rounded-base object-contain"  
+                    />
+                )}
             </div>
             <div>
                 <a

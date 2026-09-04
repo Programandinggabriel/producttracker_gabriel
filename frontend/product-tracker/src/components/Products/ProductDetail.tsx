@@ -8,6 +8,8 @@ import ProductDetailLoading from "./ProductDetailLoading";
 import NextImage from "next/image";
 import { createFavorite, deleteFavorite, type Favorite } from "@/src/services/auth";
 import ToggleHeart from "./ToggleHeart";
+import { useRouter } from "next/navigation";
+import { ErrorBoundary } from "../Error/ErrorBoundary";
 
 type ProductDetailProps = {
     provider: string;
@@ -15,6 +17,8 @@ type ProductDetailProps = {
 }
 
 export default function ProductDetail({ provider, id }:ProductDetailProps){
+    const router = useRouter();
+    
     const [isLoading, setIsLoading] = useState(true);
     const [isApiError, setIsApiError] = useState(false);
     const [apiError, setApiError] = useState<{code: String, message: String}>({
@@ -165,12 +169,14 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
             :
                 <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 bg-neutral-primary-soft border border-default rounded-base shadow-xs">
                     <div className="mb-[2vw] text-left rounded-xl bg-white p-2">
-                        <svg onClick={() => window.history.back()} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                        <svg onClick={() => router.back()} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
                         </svg>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8 lg:items-start">
-                        <Carousel images={images}/>
+                        <ErrorBoundary>
+                            <Carousel images={images}/>
+                        </ErrorBoundary>
                         <div className="mt-10 px-4 sm:px-0 sm:mt-16 lg:mt-0">
                             <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">{product?.title ?? ""}</h1>
                             <div className="flex flex-row">
@@ -183,7 +189,7 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                                     Ver producto
                                     <svg className="w-4 h-4 ms-2 rtl:rotate-[270deg]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"/></svg>
                                 </a>
-                                <div className="inline-flex rounded-fill w-20 h-20 mx-auto">
+                                <div className="inline-flex rounded-fill w-10 h-10 ml-auto">
                                     <NextImage
                                         src={getUrlLogoProvider(product?.provider?.logo ?? '')}
                                         alt={`logo-${product?.provider?.logo}`}

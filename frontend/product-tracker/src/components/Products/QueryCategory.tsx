@@ -67,7 +67,7 @@ export default function QueryCategory({ onCategoryChange, onSendQueryText }: Que
                         {   categories.map((category) => {
                                 return (
                                     <li key={category.id} onClick={() => onCategoryChange(category.id)}>
-                                        <a href="#" className="block p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded-md">{category.slug}</a>
+                                        <p className="block p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded-md">{category.slug}</p>
                                     </li>
                                 )
                             })

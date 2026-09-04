@@ -6,37 +6,44 @@ import QueryCategory from "./QueryCategory";
 import { getCategoryProducts, getProducts, getQueryProducts,type ItemProduct, PaginationMeta } from "@/src/services/products";
 import Pagination from "../Pagination";
 import ModalError from "../ModalError";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Manager(){
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    
+    const search = searchParams.get('search') ?? 'initial';
+    const limit = String(searchParams.get('limit') ?? 20);
+    const offset = String(searchParams.get('offset') ?? 0);
+    const query = searchParams.get('query') ?? '';
+    const category = searchParams.get('category') ?? '';
+
     const [isLoading, setIsLoading] = useState(false);
     const [isApiError, setIsApiError] = useState(false);
     const [apiError, setApiError] = useState<{code: String, message: String}>({
         code : '',
         message: ''
     });
-
-    type SearchType = 'initial' | 'query' | 'category'
-
-    const [currSearch, setCurrSearch] = useState<SearchType>('initial');
-    const [currQuery, setCurrQuery] = useState('');
-    const [currCategory, setCurrCategory] = useState('');
-
-    const [currLimit,  setCurrLimit] = useState(20);
-    const [currOffset, setCurrOffset] = useState(0);
     
     const [products, setProducts] = useState<ItemProduct[]>([]);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
 
-    const getApiProducts = async() => {
+    const getApiProducts = async(
+        search: string, 
+        limit: number, 
+        offset: number, 
+        query: string, 
+        category: string
+    ) => {
         let products =  null;
         
         setIsLoading(true)
-        if(currSearch === 'initial'){
-            products = await getProducts(currLimit, currOffset);
-        }else if(currSearch === 'query'){
-            products = await getQueryProducts(currQuery, currLimit, currOffset)
-        }else if (currSearch === 'category'){
-            products = await getCategoryProducts(currCategory, currLimit, currOffset)
+        if(search === 'initial'){
+            products = await getProducts(limit, offset);
+        }else if(search === 'query'){
+            products = await getQueryProducts(query, limit, offset)
+        }else if (search === 'category'){
+            products = await getCategoryProducts(category, limit, offset)
         }
 
         if(products?.success){
@@ -69,44 +76,63 @@ export default function Manager(){
     }
 
     useEffect(() => {
-       getApiProducts()
-    }, [currSearch, 
-        currLimit, 
-        currOffset, 
-        currQuery, 
-        currCategory
+        getApiProducts(
+            search,
+            Number(limit), 
+            Number(offset),
+            query,
+            category
+        )
+    }, [
+        search,
+        limit,
+        offset,
+        query,
+        category
     ])
 
     const modifiedThumbnailProduct = (providerId: String, thumbnail: string) => {
         const regularExpresion = /s-l\d+\.(?:jpg|jpeg|png|webp)$/i;
 
         if(providerId === 'ebay'){
-            return thumbnail.replace(regularExpresion, 's-l300.jpg')
+            if(thumbnail)
+                return thumbnail?.replace(regularExpresion, 's-l300.jpg');
         }
 
         return thumbnail
     }
 
-    function handleChangePagination (direction: string){
-        if(direction === 'next'){
-            setCurrOffset(prev => prev + currLimit)
-        }else if(direction === 'previous'){
-            setCurrOffset(prev => Math.max(0, prev - currLimit))
-        }
+    function handleChangePagination (direction: string){        
+        const params = new URLSearchParams(searchParams.toString());
+        const newOffset = 
+            direction === 'next'
+                ? Number(offset) + Number(limit)
+                : Math.max(0, Number(offset) - Number(limit))
+        
+        params.set('offset', String(newOffset))
+        router.push(`?${params.toString()}`)
     }
 
-    function handleChangeCategory (category: string){
-        setCurrSearch('category')
-        setCurrCategory(category)
-        setCurrLimit(20)
-        setCurrOffset(0)
+    function handleChangeCategory(category: string) {
+        const params = new URLSearchParams(searchParams.toString());
+
+        params.set('search', 'category');
+        params.set('category', category);
+        params.delete('query');
+        params.set('offset', '0');
+
+        router.push(`?${params.toString()}`);
     }
 
     function handleSendQueryText (query: string){
-        setCurrSearch('query')
-        setCurrQuery(query)
-        setCurrLimit(20)
-        setCurrOffset(0)
+        const params = new URLSearchParams(searchParams.toString())
+
+        params.set('search', 'query');
+        params.set('query', query);
+        params.delete('category');
+        params.set('offset', '0');
+
+        router.push(`?${params.toString()}`)
     }
 
     return (

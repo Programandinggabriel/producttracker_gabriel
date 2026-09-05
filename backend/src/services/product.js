@@ -241,43 +241,7 @@ const getProductById = async (
 
     const isUserFavorite = await dbUser.getDbUserProductFavorite(userId, providerID, externalId);
     const isFavorite = isUserFavorite ? true : false;
-
-    const productDb = await dbProduct.getProduct(externalId, providerID);
-    if(productDb){
-        const images = await dbProduct.getProductImages(productDb.id);
-        
-        productDb.images = images.map(img => img.image)
-        productDb.provider = {
-            id: objProvider.name,
-            logo: objProvider.logo,
-            nickname: objProvider.nickname
-        }
-        productDb.isFavorite = isFavorite
-
-        return mapDetailProduct(productDb)
-    }
-
-    const productDbExternal = await dbProduct.getExternalProduct(providerID, externalId)
-    const externalProduct = productDbExternal.product;
-    if(externalProduct){
-        const images = await dbProduct.getExternalProductImages(externalProduct.id);
-        externalProduct.providerId = externalProduct.provider_id
-        externalProduct.productId = externalProduct.product_id
-
-        delete externalProduct.provider_id
-        delete externalProduct.product_id
-
-        externalProduct.images = images.map(img => img.image)
-        externalProduct.provider = {
-            id: objProvider.name,
-            logo: objProvider.logo,
-            nickname: objProvider.nickname
-        }
-        externalProduct.isFavorite = isFavorite
-        
-        return mapDetailProduct(externalProduct)
-    }
-
+    
     const productCache = await productCacheService.findProductInCache(
         providerID,
         externalId

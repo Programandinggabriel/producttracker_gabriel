@@ -1,9 +1,10 @@
 'use client'
 
-import { deleteFavorite, Favorite, getFavorite, type ProductFavorite } from "@/src/services/auth"
+import { deleteFavorite, getFavorite, type ProductFavorite } from "@/src/services/auth"
 import { useEffect, useState } from "react";
 import ModalError from "../ModalError";
 import Image from "next/image";
+import { Favorite } from "@/src/types/auth";
 
 export default function ListFavorites () {
     const [isApiError, setIsApiError] = useState(false);
@@ -90,11 +91,11 @@ export default function ListFavorites () {
                                         sizes="120px"
                                     />
                                 </div>
-                                <div className="p-5">
+                                <div className="p-5 text-3x1 font-bold tracking-tight">
                                     <a href={`/home/products/${encodeURIComponent(favorite.provider.id)}/${encodeURIComponent(favorite.product_id)}`}>
                                         {favorite.title}
                                     </a>
-                                    <p className="mt-3">{`$${favorite.price} ${favorite.currency}`}</p>
+                                    <p className="mt-3 text-body">{`$${favorite.price} ${favorite.currency}`}</p>
                                 </div>
                                 <div className="ml-auto mt-9">
                                     <svg 

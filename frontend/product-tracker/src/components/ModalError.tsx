@@ -21,7 +21,10 @@ export default function ModalError({ apiError, onModalHide }: ModalErrorProps){
         backdrop: 'dynamic',
         backdropClasses:
             'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-        closable: true
+        closable: true,
+        onHide: () => {
+            onModalHide()
+        }
     };
     const instanceOptions = {
         id: 'popup-modal-error',
@@ -38,7 +41,6 @@ export default function ModalError({ apiError, onModalHide }: ModalErrorProps){
 
     const hideModal = () => {
         modalRef.current?.hide()
-        onModalHide()
     }
     
 

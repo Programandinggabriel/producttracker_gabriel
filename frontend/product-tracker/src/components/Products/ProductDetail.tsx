@@ -6,10 +6,12 @@ import Carousel, { type Image } from "../Carousel";
 import ModalError from "../ModalError";
 import ProductDetailLoading from "./ProductDetailLoading";
 import NextImage from "next/image";
-import { createFavorite, deleteFavorite, type Favorite } from "@/src/services/auth";
+import { createFavorite, deleteFavorite } from "@/src/services/auth";
 import ToggleHeart from "./ToggleHeart";
 import { useRouter } from "next/navigation";
 import { ErrorBoundary } from "../Error/ErrorBoundary";
+import ButtonPriceAlert from "./ButtonPriceAlert";
+import { Favorite } from "@/src/types/auth";
 
 type ProductDetailProps = {
     provider: string;
@@ -27,7 +29,7 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
     });
     
     const [product, setProduct] = useState<ItemDetailProduct | null>(null);
-    const [images, setImages] = useState<Image[]>([]);
+    const [imagesCarousel, setCarouselImages] = useState<Image[]>([]);
 
     const [isProductFav, setIsProductFav] = useState<boolean>(false);
     const [isInputFavDisabled, setIsInputFavDisabled] = useState<boolean>(false);
@@ -37,9 +39,6 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
         
         if(response.success){
             const data = response.data;
-            const images = data?.images ?? [];
-
-            const imagesModified = modifiedImagesProduct(images)
 
             setProduct({
                 product_id: data?.product_id ?? "",
@@ -48,21 +47,10 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                 currency: data?.currency ?? "",
                 description: data?.description ?? "",
                 url: data?.url ?? "",
-                images: imagesModified,
+                images: data?.images ?? [],
                 provider: data?.provider ?? { id: '', logo: '', nickname: '' },
                 is_favorite: data?.is_favorite ?? false
             })
-
-            setImages(imagesModified.map((img, index) => {
-                return {
-                    id: index,
-                    alt: `image-product-${index}`,
-                    src: img
-                }
-            }))
-
-            setIsProductFav(data?.is_favorite ?? false)
-
         }else{
             const status = response.error?.status;
             const apiError = response?.error?.data.error;
@@ -130,7 +118,7 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
     }
 
     const modifiedImagesProduct = (images: string[]) => {
-       return images.map((img) => { 
+        return images.map((img) => { 
             const regularExpresion = /s-l\d+\.(?:jpg|jpeg|png|webp)$/i;
             
             if(product?.provider?.id === 'ebay'){
@@ -162,6 +150,21 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
         getApiDetailProduct()
     }, [])
 
+    useEffect(() => {
+        if(!product) return;
+        const imagesModified = modifiedImagesProduct(product.images);
+
+        setCarouselImages(imagesModified.map((img, index) => {
+            return {
+                id: index,
+                alt: `image-product-${index}`,
+                src: img
+            }
+        }))
+
+        setIsProductFav(product.is_favorite)
+    }, [product])
+
     return(
     <> 
         {isLoading
@@ -175,7 +178,7 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8 lg:items-start">
                         <ErrorBoundary>
-                            <Carousel images={images}/>
+                            <Carousel images={imagesCarousel}/>
                         </ErrorBoundary>
                         <div className="mt-10 px-4 sm:px-0 sm:mt-16 lg:mt-0">
                             <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">{product?.title ?? ""}</h1>
@@ -187,7 +190,7 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                                     className="inline-flex font-medium items-center text-fg-brand hover:underline"
                                 >
                                     Ver producto
-                                    <svg className="w-4 h-4 ms-2 rtl:rotate-[270deg]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"/></svg>
+                                    <svg className="w-4 h-4 ms-2 rtl:rotate-270" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121 7.778-7.778"/></svg>
                                 </a>
                                 <div className="inline-flex rounded-fill w-10 h-10 ml-auto">
                                     <NextImage
@@ -219,17 +222,13 @@ export default function ProductDetail({ provider, id }:ProductDetailProps){
                                     className="text-base text-gray-700 space-y-6">
                                 </p>
                             </div>
-
-                            <div className="mt-6">
-                                <div className="mt-10 flex flex-col">
-                                    <button
-                                        type="button" 
-                                        className="mt-4 inline-flex items-center text-body bg-neutral-primary-soft border border-default hover:bg-neutral-secondary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary-soft shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none"
-                                    >
-                                        <span className="mr-3">Notificame cuando baje de precio</span>
-                                        🔔
-                                    </button>
-                                </div>
+                            <div className="mt-10 flex flex-col">
+                                <ButtonPriceAlert 
+                                    provider={product?.provider ?? null}
+                                    external_id={product?.product_id ?? ''}
+                                    currentPrice={product?.price ?? ''}
+                                    currency={product?.currency ?? ''}
+                                />
                             </div>
                         </div>
                     </div>  

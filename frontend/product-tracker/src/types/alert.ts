@@ -8,6 +8,7 @@ export type AlertType =  "danger" | "warning" | "info";
 export const ErrorAlertMap = {
     required: "danger",
     notEquals: "danger",
+    invalid: "warning",
     form: "warning",
     server: "danger"
 } satisfies Record<FormError["typeError"], AlertType>;

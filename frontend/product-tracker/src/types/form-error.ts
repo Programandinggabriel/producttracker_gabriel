@@ -1,6 +1,7 @@
 const AviableTypeError = {
     required: "required",
     notEquals: "notEquals",
+    invalid: "invalid",
     form: "form",
     server: "server"
 } as const;

@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
-import { LoginData, ProfileData, RegisterData, UpdateData } from "../types/auth";
+import {CreatePriceAlert, Favorite, LoginData, ProfileData, RegisterData, UpdateData, UpdatePriceAlert } from "../types/auth";
 import { api, ApiError } from "./axios"
-import { ItemProduct } from "./products";
+import { ItemDetailProduct, ItemProduct } from "./products";
 
 //Preview role
 export type Role = {
@@ -272,11 +272,7 @@ export const changePassword =  async (oldPassword: String, newPassword: String) 
     }
 }
 
-export type Favorite = {
-    provider: String;
-    external_id: String;
-}
-
+//FAVORITE
 export type ProductFavorite = ItemProduct;
 
 export const getFavorite = async() => {
@@ -337,3 +333,141 @@ export const deleteFavorite = async(provider: String, external_id: String) => {
         }
     }
 }
+
+//PRICE ALERTS
+export type AlertDirection = string | 'increase' | 'decrease' | null;
+
+export type PriceAlert = {
+    id: String;
+    user_id: String;
+    internal_product_id: String;
+    target_price: String;
+    direction: String;
+    active: boolean;
+    product: ItemProduct
+}
+
+export type DetailPriceAlert = {
+    id: String;
+    user_id: String;
+    internal_product_id: String;
+    target_price: string;
+    direction: AlertDirection;
+    active: boolean;
+    created: String;
+    updated: String;
+    product: ItemDetailProduct
+}
+
+type ResponsePriceAlert = {
+    alert: PriceAlert;
+}
+
+type ResponseDetailPriceAlert = {
+    alert: DetailPriceAlert;
+}
+
+export const createPriceAlert = async(formData: CreatePriceAlert) => {
+    try{
+        const payload = {
+            provider: formData.provider,
+            external_id: formData.external_id,
+            direction: formData.direction,
+            price_target: formData.price_target
+        }
+        
+        const { data } = await api.post<ResponsePriceAlert>('/users/alerts/price', payload);
+        
+        return {
+            success: true,
+            data
+        };
+    }catch(error){
+        const err = error as AxiosError<ApiError>;
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const getPriceAlerts = async() => {
+    try{
+        const { data } = await api.get<ResponsePriceAlert[]>('/users/alerts/price');
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const getPriceAlertById = async(id: String) => {
+    try{
+        const { data } = await api.get<ResponseDetailPriceAlert>(`/users/alerts/price/${id}`);
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+
+export const updatePriceAlert = async(id: String, formData: UpdatePriceAlert) => {
+     try{
+        const payload = {
+            direction: formData.direction,
+            price_target: formData.price_target,
+            active: formData.active
+        }
+
+        const { data } = await api.put<ResponsePriceAlert>(`/users/alerts/price/${id}`, payload);
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const deletePriceAlert = async(id: String) => {
+    try{ 
+        const { data } = await api.delete<Delete>(`/users/alerts/price/${id}`);
+        
+        return {
+            success: true,
+            data
+        };
+    }catch(error){
+        const err = error as AxiosError<ApiError>;
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+

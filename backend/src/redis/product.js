@@ -172,7 +172,7 @@ async function findProduct(provider, externalId) {
                     }
                 }).filter(p => p !== null);
 
-                const productFind = products.find((product) => {
+                const productFind = products.flat().find((product) => {
                     return product.providerId === provider &&
                         product.productId === externalId;
                 });
@@ -186,11 +186,19 @@ async function findProduct(provider, externalId) {
             if(wasFound) break;
         }
         
-        return {
-            available: true,
-            hit: true,
-            product: product
-        };
+        if(wasFound){
+            return {
+                available: true,
+                hit: true,
+                product: product
+            };
+        }else{
+            return {
+                available: true,
+                hit: false,
+                product: product
+            };
+        }
 
     }catch(error){
         logRedisError(error)

@@ -525,13 +525,25 @@ const getPriceAlerts = async (
         userAlerts.map(async (uAlert) => {
             const productId = uAlert.product_id;
             const product = await dbProduct.getExternalProductById(productId);
+            const provider = await dbProvider.getProvider(product.providerId);
+            const objProvider = provider.provider;
             const productImages = await dbProduct.getExternalProductImages(productId);
 
             product.images = productImages.map(img => img.image)
+            product.provider = {
+                id: objProvider.name,
+                logo: objProvider.logo,
+                nickname: objProvider.nickname
+            }
 
             return {
                 alert: {
-                    ...uAlert,
+                    id: uAlert.id,
+                    user_id: uAlert.user_id,
+                    internal_product_id: uAlert.product_id,
+                    target_price: uAlert.target_price,
+                    direction: uAlert.direction,
+                    active: uAlert.active,
                     product: mapPreviewProduct(product)
                 }
             }
@@ -556,14 +568,28 @@ const getPriceAlertById = async (id) => {
     }
 
     const product = await dbProduct.getExternalProductById(alert.product_id);
+    const provider = await dbProvider.getProvider(product.providerId);
+    const objProvider = provider.provider;
     const images = await dbProduct.getExternalProductImages(product.id)
 
     product.images = images.map(img => img.image)
+    product.provider = {
+        id: objProvider.name,
+        logo: objProvider.logo,
+        nickname: objProvider.nickname
+    }
 
     return {
         alert: {
-                ...alert,
-                product: mapDetailProduct(product)
+            id: alert.id,
+            user_id: alert.user_id,
+            internal_product_id: alert.product_id,
+            target_price: alert.target_price,
+            direction: alert.direction,
+            active: alert.active,
+            created: alert.created,
+            updated: alert.updated,
+            product: mapDetailProduct(product)
         }
     }
 }
@@ -701,7 +727,26 @@ const createPriceAlert = async (
         direction
     )
 
-    return newPriceAlert;
+
+    newProduct.productId = newProduct.product_id
+    delete newProduct.product_id
+    newProduct.provider = {
+        id: objProvider.name,
+        logo: objProvider.logo,
+        nickname: objProvider.nickname
+    }
+
+    return {
+        alert: {
+            id: newPriceAlert.id,
+            user_id: newPriceAlert.user_id,
+            internal_product_id: newPriceAlert.product_id,
+            target_price: newPriceAlert.target_price,
+            direction: newPriceAlert.direction,
+            active: newPriceAlert.active,
+            product: mapPreviewProduct(newProduct)
+        }
+    };
 }
 
 const updatePriceAlert = async (
@@ -711,7 +756,7 @@ const updatePriceAlert = async (
     direction,
     active
 ) => {
-    if(!direction || !priceTarget || !active){
+    if(!direction || !priceTarget || active === undefined){
         throw new ThrowError(
             "Missing required fields: direction, price_target, active", 
             400, 
@@ -746,7 +791,7 @@ const updatePriceAlert = async (
         );
     }
 
-    const existsAlert = dbProductPriceAlert.getUserPriceAlert(
+    const existsAlert = await dbProductPriceAlert.getUserPriceAlert(
         idUser, 
         idAlert
     )
@@ -762,7 +807,42 @@ const updatePriceAlert = async (
         );
     }
 
-    const updatedAlert = dbProductPriceAlert.updateUserProductPriceAlert(
+    const external_product = await dbProduct.getExternalProductById(existsAlert.product_id);
+    const provider = await dbProvider.getProvider(external_product.providerId);
+    const objProvider = provider.provider;
+
+    const product = await objProvider.module.getProductsByIds(
+        [external_product.productId]
+    )
+
+    const productApiProvider = product.flat()[0];
+    const currentPrice = Number(productApiProvider.price);
+
+    if(direction === 'INCREASE' && target < currentPrice){
+        throw new ThrowError(
+            "Incorrect price_target it must be less than the product price ", 
+            400,
+            "BAD_REQUEST",
+            {
+                direction: direction,
+                target: target,
+                current_price: currentPrice
+            }
+        );
+    }else if(direction === 'DECREASE' && target > currentPrice){
+        throw new ThrowError(
+            "Incorrect price_target it must be higher than the product price ", 
+            400,
+            "BAD_REQUEST",
+            {
+                direction: direction,
+                target: target,
+                current_price: external_product.price
+            }
+        );
+    }
+
+    const updatedAlert = await dbProductPriceAlert.updateUserProductPriceAlert(
         idUser,
         idAlert,
         priceTarget,
@@ -770,7 +850,23 @@ const updatePriceAlert = async (
         active
     )
 
-    return updatedAlert
+    productApiProvider.provider = {
+        id: objProvider.name,
+        logo: objProvider.logo,
+        nickname: objProvider.nickname
+    }
+
+    return {
+        alert: {
+            id: updatedAlert.id,
+            user_id: updatedAlert.user_id,
+            internal_product_id: updatedAlert.product_id,
+            target_price: updatedAlert.target_price,
+            direction: updatedAlert.direction,
+            active: updatedAlert.active,
+            product: mapPreviewProduct(productApiProvider)
+        }
+    };
 }
 
 const deletePriceAlert = async (idUser, idAlert) => {

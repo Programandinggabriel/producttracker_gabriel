@@ -65,12 +65,14 @@ const getUserProductPriceAlert = async (idUser, alertDirection ,provider, idProd
 
 const getUserPriceAlerts = async (idUser) => {
     const query = `SELECT id,
+                          user_id,
                           product_id,
                           target_price,
                           direction,
                           active
                     FROM products_price_alerts
-                   WHERE user_id = $1`;
+                   WHERE user_id = $1
+                   ORDER BY created DESC`;
     const values = [idUser];
 
     const { rows } = await pool.query(query, values);
@@ -79,7 +81,8 @@ const getUserPriceAlerts = async (idUser) => {
 }
 
 const getUserPriceAlert = async(idUser, idAlert) => {
-    const query = `SELECT id 
+    const query = `SELECT id,
+                          product_id
                     FROM products_price_alerts
                    WHERE user_id = $1
                      AND id = $2`;

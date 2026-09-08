@@ -38,9 +38,9 @@ const detectedUserPriceChanges = (
     }
 
     if(direction === 'INCREASE'){
-        return currentPrice < target && newPrice >= target;
+        return currentPrice <= target && newPrice > target;
     }else if (direction === 'DECREASE'){
-        return currentPrice > target && newPrice <= target;
+        return currentPrice >= target && newPrice < target;
     }
 
     return false

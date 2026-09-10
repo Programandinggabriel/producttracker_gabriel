@@ -1,8 +1,37 @@
 'use client'
 
 import Image from "next/image";
+import { Role } from "../services/auth";
+import { useEffect, useState } from "react";
 
 export default function SideBar(){
+    const [userRoles, setUserRoles] = useState<Role[]>([]);
+
+    function hasRoles (names: String[]){
+        const rolesFind = names.map((item) => {
+            const existsRole = userRoles.find(role => role.role_name === item)
+               
+            if(existsRole){
+                return{
+                    role_id: existsRole.role_id
+                }
+            }else{
+                return null;
+            }
+        }).filter(role => role !== null)
+        
+        if (rolesFind.length > 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    useEffect(() => {
+        const roles = JSON.parse(localStorage.getItem('userRoles') ?? '[]')
+        setUserRoles(roles)
+    }, [])
+
     return (
     <>
         <div className="text-left">
@@ -38,34 +67,42 @@ export default function SideBar(){
             </div>
             <div className="py-5 overflow-y-auto">
                 <ul className="space-y-2 font-medium">
-                    <li>
-                        <a href="/home/products" className="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                        <svg className="shrink-0 w-5 h-5 transition duration-75 group-hover:text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 10V6a3 3 0 0 1 3-3v0a3 3 0 0 1 3 3v4m3-2 .917 11.923A1 1 0 0 1 17.92 21H6.08a1 1 0 0 1-.997-1.077L6 8h12Z"/></svg>
-                        <span className="flex-1 ms-3 whitespace-nowrap">Productos</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/home/users/favorites" className="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                    {hasRoles(['editor', 'viewer', 'admin']) && (
+                        <li>
+                            <a href="/home/products" className="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                                <svg className="shrink-0 w-5 h-5 transition duration-75 group-hover:text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 10V6a3 3 0 0 1 3-3v0a3 3 0 0 1 3 3v4m3-2 .917 11.923A1 1 0 0 1 17.92 21H6.08a1 1 0 0 1-.997-1.077L6 8h12Z"/></svg>
+                                <span className="flex-1 ms-3 whitespace-nowrap">Productos</span>
+                            </a>
+                        </li>
+                    )}
+                    {hasRoles(['editor', 'viewer', 'admin']) && (
+                        <li>
+                            <a href="/home/users/favorites" className="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                                </svg>
+                                <span className="flex-1 ms-3 whitespace-nowrap">Favoritos</span>
+                            </a>
+                        </li>
+                    )}
+                    {hasRoles(['editor', 'viewer', 'admin']) && (
+                        <li>
+                            <a href="/home/users/price-alerts" className="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                            </svg>
-                            <span className="flex-1 ms-3 whitespace-nowrap">Favoritos</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/home/users/price-alerts" className="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                            </svg>
-                            <span className="flex-1 ms-3 whitespace-nowrap">Alertas</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/home/users" className="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
-                        <svg className="shrink-0 w-5 h-5 transition duration-75 group-hover:text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M16 19h4a1 1 0 0 0 1-1v-1a3 3 0 0 0-3-3h-2m-2.236-4a3 3 0 1 0 0-4M3 18v-1a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Zm8-10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                        <span className="flex-1 ms-3 whitespace-nowrap">Usuarios</span>
-                        </a>
-                    </li>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                </svg>
+                                <span className="flex-1 ms-3 whitespace-nowrap">Alertas</span>
+                            </a>
+                        </li>
+                    )}
+                    {hasRoles(['admin']) && (
+                        <li>
+                            <a href="/home/users" className="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                            <svg className="shrink-0 w-5 h-5 transition duration-75 group-hover:text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M16 19h4a1 1 0 0 0 1-1v-1a3 3 0 0 0-3-3h-2m-2.236-4a3 3 0 1 0 0-4M3 18v-1a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Zm8-10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                            <span className="flex-1 ms-3 whitespace-nowrap">Usuarios</span>
+                            </a>
+                        </li>
+                    )}
                     <li>
                         <a href="/home/profile" className="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">

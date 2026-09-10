@@ -60,7 +60,8 @@ type Delete = {
 }
 
 type TokenUser = {
-    token: string
+    token: string,
+    roles: Role[]
 }
 
 export const createUser = async(formData: RegisterData) => {

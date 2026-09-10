@@ -64,7 +64,16 @@ const login = async (username, password) => {
             expiresIn: '1h'
         }
     );
-    return token;
+
+    return {
+        token: token,
+        roles: userRoles.map(role => {
+            return {
+                role_id: role.role_id,
+                role_name: role.name
+            }
+        })
+    };
 }
 
 

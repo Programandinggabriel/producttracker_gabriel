@@ -1,21 +1,19 @@
 const { pool } = require('../config/db');
 
-const getProviderCategories = async (provider, limit) => {
+const getProviderCategoriesIn = async (provider, categories) => {
     const query = `SELECT id,
                           external_id,
-                          name 
+                          name
                     FROM provider_category
-                   WHERE provider = $1
-                   ORDER BY id 
-                   LIMIT $2`;
-    
-    const values = [provider, limit];
+                   WHERE provider = $1 
+                     AND external_id = ANY($2)`;
+    const values = [provider, categories];
 
-    const { rows } = await pool.query(query, values);
+    const { rows } = await pool.query(query, values)
 
     return rows
 }
 
 module.exports = {
-    getProviderCategories
+    getProviderCategoriesIn
 }

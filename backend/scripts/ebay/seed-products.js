@@ -2,7 +2,7 @@ require("dotenv").config();
 const ebayAuth = require('../../src/providers/ebay/auth')
 const mapEbayProduct = require('../../src/providers/ebay/product-mapper')
 const { Product, createProduct, createImageProduct, getProduct } = require('../../src/models/product')
-const { getProviderCategories } = require('../../src/models/provider-category')
+const { getProviderCategoriesIn } = require('../../src/models/provider-category')
 const EBAY_API_URL = process.env.EBAY_API;
 const EBAY_MARKET_PLACE_ID = process.env.EBAY_MARKETPLACE_ID
 const TOTAL_PRODUCTS = 40;
@@ -97,7 +97,7 @@ async function saveProducts(products) {
     for (const product of products){
         const productExist = await getProduct(product.productId, product.providerId)
         
-        if(productExist.rowCount === 0){
+        if(!productExist){
             console.log(
                 `Guardando: ${product.title} - ${product.price} ${product.currency}`
             );
@@ -119,7 +119,12 @@ async function saveProducts(products) {
 async function main() {
     try{
         const token = await ebayAuth.getEbayAccessToken();
-        const providerCategories = await getProviderCategories('ebay', 4);
+        const providerCategories = await getProviderCategoriesIn('ebay', [
+            '50422',
+            '175672',
+            '9355',
+            '58058'
+        ]);
         const categories = providerCategories.map(category => {
             return {
                 id: category.external_id,

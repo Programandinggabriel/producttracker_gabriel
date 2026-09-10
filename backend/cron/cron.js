@@ -5,7 +5,7 @@ const cron = [
     {
         name: 'Price alert notifier',
         path: './src/cron/price_alert_notifier.js',
-        schedule: '* * * * *'
+        schedule: '0 15 * * *'
     }
 ];
 
@@ -13,22 +13,22 @@ const jobs = [
     {
         name: 'Price alert activation',
         path: './src/jobs/price_alert_activation.js',
-        schedule: '0 */1 * * *'
+        schedule: '30 14 * * *'
     },
     {
         name: 'Price change detector',
         path: './src/jobs/price_change_detector.js',
-        schedule: '0 */2 * * *'
+        schedule: '0 12 * * *'
     },
     {
         name: 'Refresh external products',
         path: './src/jobs/refresh_external_products.js',
-        schedule: '30 */2 * * *'
+        schedule: '10 12 * * *'
     },
     {
         name: 'Refresh products',
         path: './src/jobs/refresh_products.js',
-        schedule: '0 */3 * * *'
+        schedule: '15 12 * * *'
     }
 ];
 

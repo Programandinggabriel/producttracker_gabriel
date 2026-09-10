@@ -43,8 +43,11 @@ export default function LoginForm(){
             }
         }else{
             const token = login.data?.token ?? '';
+            const roles = JSON.stringify(login.data?.roles);
+
             localStorage.setItem('authToken', token)
-            window.location.href = '/home'
+            localStorage.setItem('userRoles', roles)
+            window.location.href = '/home/products'
         }
     }
 

@@ -4,7 +4,7 @@ const login = async (req, res, next) => {
     try {
         const { username, password } = req.body;
         const userToken = await userService.login(username, password);
-        res.json({ token: userToken });
+        res.json(userToken);
     } catch (error) {
         next(error);
     }

@@ -23,6 +23,8 @@ services:
     restart: unless-stopped
   cron:
     build: ./backend
+    env_file:
+      - ./backend/.env
     environment:
       - DB_HOST=postgres
       - TZ=America/Bogota

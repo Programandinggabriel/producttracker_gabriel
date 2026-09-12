@@ -8,10 +8,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
     restart: unless-stopped
-
-volumes:
-  postgres_data:
-  
   redis:
     image: redis:latest
     restart: unless-stopped
@@ -34,3 +30,6 @@ volumes:
     ports:
       - "127.0.0.1:3000:3000"
     restart: unless-stopped
+volumes:
+  postgres_data:
+  

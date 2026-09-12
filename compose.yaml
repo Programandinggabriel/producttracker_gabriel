@@ -23,6 +23,8 @@ services:
     restart: unless-stopped
   cron:
     build: ./backend
+    environment:
+      - TZ=America/Bogota
     command: node cron/cron.js
     restart: unless-stopped
   frontend:

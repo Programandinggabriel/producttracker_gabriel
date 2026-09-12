@@ -24,6 +24,7 @@ services:
   cron:
     build: ./backend
     environment:
+      - DB_HOST=postgres
       - TZ=America/Bogota
     command: node cron/cron.js
     restart: unless-stopped

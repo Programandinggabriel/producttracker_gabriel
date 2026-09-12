@@ -27,6 +27,8 @@ services:
     restart: unless-stopped
   frontend:
     build: ./frontend/product-tracker
+    env_file:
+      - ./frontend/product-tracker/.env
     ports:
       - "127.0.0.1:3000:3000"
     restart: unless-stopped

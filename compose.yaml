@@ -5,7 +5,11 @@ services:
       - "5433:5432"
     env_file:
       - ./backend/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql
     restart: unless-stopped
+  volumes:
+    postgres_data
   redis:
     image: redis:latest
     restart: unless-stopped

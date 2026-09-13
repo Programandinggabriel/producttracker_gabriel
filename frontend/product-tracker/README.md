@@ -2,8 +2,6 @@
 
 Cliente web del proyecto **Product Tracker**, construido con **Next**.
 
-> 🚧 **En desarrollo activo** — el desarrollo del frontend está por comenzar/en etapas iniciales, mientras el backend avanza en paralelo.
-
 ## 📌 Descripción
 
 Esta es la interfaz de usuario de Product Tracker. Consumirá la API REST expuesta por el [backend](../backend/README.md) para mostrar y gestionar productos y usuarios.
@@ -17,19 +15,17 @@ Esta es la interfaz de usuario de Product Tracker. Consumirá la API REST expues
 
 ### Implementado
 
-* [ ] Configuración inicial del proyecto React
-* [ ] Consumo de la API del backend
-* [ ] Autenticación (login / registro)
-* [ ] Vista de gestión de productos
-* [ ] Manejo de estado global
-* [ ] Estilos y diseño de interfaz
+* [x] Configuración inicial del proyecto React
+* [x] Consumo de la API del backend
+* [x] Autenticación (login / registro)
+* [x] Vista de gestión de productos
+* [x] Manejo de estado global
+* [x] Estilos y diseño de interfaz
+* [x] Integración de endpoints
 
-### Próximamente
+### Próximamente 
+* [] Nuevas funcionabilidades
 
-* [ ] Integración completa con endpoints de productos
-* [ ] Manejo de errores y validaciones en formularios
-* [ ] Tests
-* [ ] Despliegue
 
 ## 📂 Estructura (referencial)
 
@@ -51,8 +47,6 @@ cd frontend
 npm install
 npm run dev
 ```
-
-> Ajusta este bloque según el bundler/framework usado (Vite, Create React App, etc.) y las variables de entorno necesarias (por ejemplo, la URL base de la API).
 
 ---
 

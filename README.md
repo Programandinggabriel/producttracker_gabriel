@@ -1,6 +1,6 @@
 # Product Tracker
 
-Aplicación **Full Stack** para la gestión y seguimiento de productos, desarrollada con **Node.js, React, PostgreSQL y Redis**.
+Aplicación **Full Stack** para la gestión y seguimiento de productos, desarrollada con **Node.js, Next.js, PostgreSQL y Redis**.
 
 > 🚧 **Proyecto en desarrollo activo**
 
@@ -17,7 +17,7 @@ La aplicación comenzó utilizando **DummyJSON** como fuente externa de datos de
 ```
 product-tracker/
 ├── backend/    # API REST (Node.js, Express, PostgreSQL, Redis)
-├── frontend/   # Cliente web (React)
+├── frontend/   # Cliente web (Next)
 └── README.md   # Este archivo
 ```
 
@@ -47,17 +47,15 @@ Cada carpeta cuenta con su propio README con detalles específicos:
 * [x] Integración con la API de eBay (bajo excepción por no almacenar datos de usuario)
 * [x] Integración con PostgreSQL
 * [x] Integración de Redis
-
+* [x] Gestión de productos
+* [x] Desarrollo del frontend con Next
+* [x] Cache y optimización
+* [x] Despliegue en Oracle
 ### En desarrollo / Próximamente
-
-* [ ] Capa de Providers
-* [ ] Gestión de productos
-* [ ] Desarrollo del frontend con React
-* [ ] Caché y optimización
-* [ ] Validaciones y manejo de errores
+* [ ] Agregar más providers
 * [ ] Auth refresh token
-* [ ] Tests
-* [ ] Despliegue
+* [ ] Pulir detalles de diseño
+* [ ] Nuevas funcionabilidades
 
 ## 🎯 Objetivo
 
@@ -69,7 +67,7 @@ Convertir progresivamente el proyecto en una aplicación Full Stack más complet
 * Integración con servicios externos
 * PostgreSQL y persistencia de datos
 * Redis y estrategias de caché
-* Desarrollo con React
+* Desarrollo con Next
 * Testing y optimización
 
 ---

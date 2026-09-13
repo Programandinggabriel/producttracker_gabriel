@@ -6,15 +6,15 @@ API REST del proyecto **Product Tracker**, construida con **Node.js, Express, Po
 
 ## 📌 Descripción
 
-Este backend expone la API que consume el frontend en React. Actualmente maneja autenticación y CRUD de usuarios.
+Este backend expone la API que consume el frontend en Next.js. Actualmente maneja autenticación y CRUD de usuarios.
 
 Está pensado para evolucionar hacia una capa de **providers** que desacople el consumo de APIs externas de la lógica de negocio.
 
 ## 🛠️ Tecnologías
 
 * **Node.js / Express** — Servidor y rutas de la API REST
-* **PostgreSQL** — Persistencia de datos (integración en progreso)
-* **Redis** — Caché y optimización (integración planificada)
+* **PostgreSQL** — Persistencia de datos
+* **Redis** — Caché y optimización
 * **DummyJSON** — Fuente externa utilizada actualmente durante el desarrollo
 
 ## 🚀 Estado actual
@@ -28,15 +28,11 @@ Está pensado para evolucionar hacia una capa de **providers** que desacople el 
 * [x] Integración inicial con API externa (DummyJSON)
 * [x] Integración con PostgreSQL
 * [x] Integración de Redis (caché)
-
 ### En desarrollo / Próximamente
 
-* [ ] Capa de Providers
-* [ ] Gestión de productos (CRUD)
-* [ ] Validaciones y manejo de errores
+* [ ] Otros providers
 * [ ] Auth refresh token
-* [ ] Tests
-* [ ] Despliegue
+* [ ] Nuevas funcionabilidades
 
 ## 📂 Estructura (referencial)
 
@@ -66,8 +62,6 @@ cd backend
 npm install
 npm run dev
 ```
-
-> Ajusta este bloque con los scripts y variables de entorno reales de tu `package.json` (por ejemplo, puerto, cadena de conexión a PostgreSQL, host de Redis, etc.).
 
 ---
 

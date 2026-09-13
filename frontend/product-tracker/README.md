@@ -24,7 +24,7 @@ Esta es la interfaz de usuario de Product Tracker. Consumirá la API REST expues
 * [x] Integración de endpoints
 
 ### Próximamente 
-* [] Nuevas funcionabilidades
+* [ ] Nuevas funcionabilidades
 
 
 ## 📂 Estructura (referencial)

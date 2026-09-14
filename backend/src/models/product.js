@@ -244,7 +244,11 @@ const getExternalProductsPriceChangeClaimedAt = async(providerName) => {
                           product_id
                     FROM external_products
                    WHERE price_change_claimed_at > provider_updated_at
-                     AND provider_id = $1`;
+                   OR (
+                        price_change_claimed_at IS NOT NULL 
+						AND provider_updated_at IS NULL
+					)
+                    AND provider_id = $1`;
         
     const values = [providerName];
 

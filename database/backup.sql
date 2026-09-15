@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict f8jmF1G6g6390pBgytLBDbLD5Hd8GJDOEKxxnJuGg8TniXppEaCdCsc7XXWr9g9
+\restrict 1vFGWY38Krk7mCeLVcRxT1NGiJDfX5sNlXKNgqMgoGqxBDhX5s9DQXH6FuyVjmg
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
 
--- Started on 2026-09-11 20:42:38
+-- Started on 2026-09-15 17:11:56
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -42,7 +42,7 @@ CREATE TABLE public.category (
 ALTER TABLE public.category OWNER TO postgres;
 
 --
--- TOC entry 5049 (class 0 OID 0)
+-- TOC entry 5050 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: TABLE category; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -77,7 +77,7 @@ CREATE TABLE public.external_products (
 ALTER TABLE public.external_products OWNER TO postgres;
 
 --
--- TOC entry 5050 (class 0 OID 0)
+-- TOC entry 5051 (class 0 OID 0)
 -- Dependencies: 227
 -- Name: TABLE external_products; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -103,7 +103,7 @@ CREATE TABLE public.external_products_images (
 ALTER TABLE public.external_products_images OWNER TO postgres;
 
 --
--- TOC entry 5051 (class 0 OID 0)
+-- TOC entry 5052 (class 0 OID 0)
 -- Dependencies: 228
 -- Name: TABLE external_products_images; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -129,7 +129,7 @@ CREATE TABLE public.price_alerts_activation (
 ALTER TABLE public.price_alerts_activation OWNER TO postgres;
 
 --
--- TOC entry 5052 (class 0 OID 0)
+-- TOC entry 5053 (class 0 OID 0)
 -- Dependencies: 231
 -- Name: TABLE price_alerts_activation; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -163,7 +163,7 @@ CREATE TABLE public.products (
 ALTER TABLE public.products OWNER TO postgres;
 
 --
--- TOC entry 5053 (class 0 OID 0)
+-- TOC entry 5054 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: TABLE products; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -189,7 +189,7 @@ CREATE TABLE public.products_images (
 ALTER TABLE public.products_images OWNER TO postgres;
 
 --
--- TOC entry 5054 (class 0 OID 0)
+-- TOC entry 5055 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: TABLE products_images; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -217,7 +217,7 @@ CREATE TABLE public.products_price_alerts (
 ALTER TABLE public.products_price_alerts OWNER TO postgres;
 
 --
--- TOC entry 5055 (class 0 OID 0)
+-- TOC entry 5056 (class 0 OID 0)
 -- Dependencies: 229
 -- Name: TABLE products_price_alerts; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -245,7 +245,7 @@ CREATE TABLE public.products_price_history (
 ALTER TABLE public.products_price_history OWNER TO postgres;
 
 --
--- TOC entry 5056 (class 0 OID 0)
+-- TOC entry 5057 (class 0 OID 0)
 -- Dependencies: 230
 -- Name: TABLE products_price_history; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -270,7 +270,7 @@ CREATE TABLE public.provider_category (
 ALTER TABLE public.provider_category OWNER TO postgres;
 
 --
--- TOC entry 5057 (class 0 OID 0)
+-- TOC entry 5058 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: TABLE provider_category; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -317,7 +317,7 @@ CREATE TABLE public.providers (
 ALTER TABLE public.providers OWNER TO postgres;
 
 --
--- TOC entry 5058 (class 0 OID 0)
+-- TOC entry 5059 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: TABLE providers; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -341,7 +341,7 @@ CREATE TABLE public.roles (
 ALTER TABLE public.roles OWNER TO postgres;
 
 --
--- TOC entry 5059 (class 0 OID 0)
+-- TOC entry 5060 (class 0 OID 0)
 -- Dependencies: 232
 -- Name: TABLE roles; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -359,14 +359,18 @@ CREATE TABLE public.users (
     name character varying(100),
     email character varying(255),
     password character varying(255) NOT NULL,
-    username character varying(100) NOT NULL
+    username character varying(100) NOT NULL,
+    created timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated timestamp with time zone,
+    last_reset_password timestamp with time zone,
+    last_change_password timestamp with time zone
 );
 
 
 ALTER TABLE public.users OWNER TO postgres;
 
 --
--- TOC entry 5060 (class 0 OID 0)
+-- TOC entry 5061 (class 0 OID 0)
 -- Dependencies: 222
 -- Name: TABLE users; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -389,7 +393,7 @@ CREATE TABLE public.users_product_favorite (
 ALTER TABLE public.users_product_favorite OWNER TO postgres;
 
 --
--- TOC entry 5061 (class 0 OID 0)
+-- TOC entry 5062 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: TABLE users_product_favorite; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -412,7 +416,7 @@ CREATE TABLE public.users_roles (
 ALTER TABLE public.users_roles OWNER TO postgres;
 
 --
--- TOC entry 5062 (class 0 OID 0)
+-- TOC entry 5063 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: TABLE users_roles; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -421,7 +425,7 @@ COMMENT ON TABLE public.users_roles IS 'Roles asignados al usuario';
 
 
 --
--- TOC entry 4839 (class 2606 OID 16434)
+-- TOC entry 4840 (class 2606 OID 16434)
 -- Name: category categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -430,7 +434,7 @@ ALTER TABLE ONLY public.category
 
 
 --
--- TOC entry 4868 (class 2606 OID 16920)
+-- TOC entry 4869 (class 2606 OID 16920)
 -- Name: external_products_images external_products_images_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -439,7 +443,7 @@ ALTER TABLE ONLY public.external_products_images
 
 
 --
--- TOC entry 4864 (class 2606 OID 16901)
+-- TOC entry 4865 (class 2606 OID 16901)
 -- Name: external_products external_products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -448,7 +452,7 @@ ALTER TABLE ONLY public.external_products
 
 
 --
--- TOC entry 4875 (class 2606 OID 17060)
+-- TOC entry 4876 (class 2606 OID 17060)
 -- Name: price_alerts_activation price_alert_activation_alert_id_history_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -457,7 +461,7 @@ ALTER TABLE ONLY public.price_alerts_activation
 
 
 --
--- TOC entry 4877 (class 2606 OID 17058)
+-- TOC entry 4878 (class 2606 OID 17058)
 -- Name: price_alerts_activation price_alert_activation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -466,7 +470,7 @@ ALTER TABLE ONLY public.price_alerts_activation
 
 
 --
--- TOC entry 4846 (class 2606 OID 16436)
+-- TOC entry 4847 (class 2606 OID 16436)
 -- Name: products_images products_images_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -475,7 +479,7 @@ ALTER TABLE ONLY public.products_images
 
 
 --
--- TOC entry 4842 (class 2606 OID 16438)
+-- TOC entry 4843 (class 2606 OID 16438)
 -- Name: products products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -484,7 +488,7 @@ ALTER TABLE ONLY public.products
 
 
 --
--- TOC entry 4870 (class 2606 OID 17004)
+-- TOC entry 4871 (class 2606 OID 17004)
 -- Name: products_price_alerts products_price_alerts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -493,7 +497,7 @@ ALTER TABLE ONLY public.products_price_alerts
 
 
 --
--- TOC entry 4872 (class 2606 OID 17029)
+-- TOC entry 4873 (class 2606 OID 17029)
 -- Name: products_price_history products_price_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -502,7 +506,7 @@ ALTER TABLE ONLY public.products_price_history
 
 
 --
--- TOC entry 4860 (class 2606 OID 16855)
+-- TOC entry 4861 (class 2606 OID 16855)
 -- Name: provider_category_cache provider_category_cache_category_id_provider_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -511,7 +515,7 @@ ALTER TABLE ONLY public.provider_category_cache
 
 
 --
--- TOC entry 4862 (class 2606 OID 16843)
+-- TOC entry 4863 (class 2606 OID 16843)
 -- Name: provider_category_cache provider_category_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -520,7 +524,7 @@ ALTER TABLE ONLY public.provider_category_cache
 
 
 --
--- TOC entry 4856 (class 2606 OID 16788)
+-- TOC entry 4857 (class 2606 OID 16788)
 -- Name: provider_category provider_category_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -529,7 +533,7 @@ ALTER TABLE ONLY public.provider_category
 
 
 --
--- TOC entry 4858 (class 2606 OID 16806)
+-- TOC entry 4859 (class 2606 OID 16806)
 -- Name: providers providers_name_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -538,7 +542,7 @@ ALTER TABLE ONLY public.providers
 
 
 --
--- TOC entry 4879 (class 2606 OID 17092)
+-- TOC entry 4880 (class 2606 OID 17092)
 -- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -547,7 +551,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 4866 (class 2606 OID 16903)
+-- TOC entry 4867 (class 2606 OID 16903)
 -- Name: external_products unique_provider_external_product; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -556,7 +560,7 @@ ALTER TABLE ONLY public.external_products
 
 
 --
--- TOC entry 4844 (class 2606 OID 16440)
+-- TOC entry 4845 (class 2606 OID 16440)
 -- Name: products unique_provider_product; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -565,7 +569,7 @@ ALTER TABLE ONLY public.products
 
 
 --
--- TOC entry 4848 (class 2606 OID 16984)
+-- TOC entry 4849 (class 2606 OID 16984)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -574,7 +578,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4852 (class 2606 OID 16444)
+-- TOC entry 4853 (class 2606 OID 16444)
 -- Name: users_product_favorite users_product_favorite_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -583,7 +587,7 @@ ALTER TABLE ONLY public.users_product_favorite
 
 
 --
--- TOC entry 4854 (class 2606 OID 16944)
+-- TOC entry 4855 (class 2606 OID 16944)
 -- Name: users_product_favorite users_product_favorite_user_id_product_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -592,7 +596,7 @@ ALTER TABLE ONLY public.users_product_favorite
 
 
 --
--- TOC entry 4881 (class 2606 OID 17108)
+-- TOC entry 4882 (class 2606 OID 17108)
 -- Name: users_roles users_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -601,7 +605,7 @@ ALTER TABLE ONLY public.users_roles
 
 
 --
--- TOC entry 4850 (class 2606 OID 16986)
+-- TOC entry 4851 (class 2606 OID 16986)
 -- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -610,7 +614,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4840 (class 1259 OID 16445)
+-- TOC entry 4841 (class 1259 OID 16445)
 -- Name: fki_parent_id_fk; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -618,7 +622,7 @@ CREATE INDEX fki_parent_id_fk ON public.category USING btree (parent_id);
 
 
 --
--- TOC entry 4873 (class 1259 OID 17136)
+-- TOC entry 4874 (class 1259 OID 17136)
 -- Name: fki_price_alert_activation_alert_id_fkey; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -626,7 +630,7 @@ CREATE INDEX fki_price_alert_activation_alert_id_fkey ON public.price_alerts_act
 
 
 --
--- TOC entry 4886 (class 2606 OID 16789)
+-- TOC entry 4887 (class 2606 OID 16789)
 -- Name: provider_category category_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -635,7 +639,7 @@ ALTER TABLE ONLY public.provider_category
 
 
 --
--- TOC entry 4889 (class 2606 OID 16933)
+-- TOC entry 4890 (class 2606 OID 16933)
 -- Name: external_products_images external_products_images_id_product_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -644,7 +648,7 @@ ALTER TABLE ONLY public.external_products_images
 
 
 --
--- TOC entry 4882 (class 2606 OID 16446)
+-- TOC entry 4883 (class 2606 OID 16446)
 -- Name: category parent_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -653,8 +657,8 @@ ALTER TABLE ONLY public.category
 
 
 --
--- TOC entry 5063 (class 0 OID 0)
--- Dependencies: 4882
+-- TOC entry 5064 (class 0 OID 0)
+-- Dependencies: 4883
 -- Name: CONSTRAINT parent_id_fk ON category; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -662,7 +666,7 @@ COMMENT ON CONSTRAINT parent_id_fk ON public.category IS 'referencia sub categor
 
 
 --
--- TOC entry 4893 (class 2606 OID 17131)
+-- TOC entry 4894 (class 2606 OID 17131)
 -- Name: price_alerts_activation price_alert_activation_alert_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -671,7 +675,7 @@ ALTER TABLE ONLY public.price_alerts_activation
 
 
 --
--- TOC entry 4894 (class 2606 OID 17066)
+-- TOC entry 4895 (class 2606 OID 17066)
 -- Name: price_alerts_activation price_alert_activation_history_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -680,7 +684,7 @@ ALTER TABLE ONLY public.price_alerts_activation
 
 
 --
--- TOC entry 4884 (class 2606 OID 16928)
+-- TOC entry 4885 (class 2606 OID 16928)
 -- Name: products_images products_images_id_product_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -689,7 +693,7 @@ ALTER TABLE ONLY public.products_images
 
 
 --
--- TOC entry 4890 (class 2606 OID 17012)
+-- TOC entry 4891 (class 2606 OID 17012)
 -- Name: products_price_alerts products_price_alerts_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -698,7 +702,7 @@ ALTER TABLE ONLY public.products_price_alerts
 
 
 --
--- TOC entry 4891 (class 2606 OID 17124)
+-- TOC entry 4892 (class 2606 OID 17124)
 -- Name: products_price_alerts products_price_alerts_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -707,7 +711,7 @@ ALTER TABLE ONLY public.products_price_alerts
 
 
 --
--- TOC entry 4892 (class 2606 OID 17030)
+-- TOC entry 4893 (class 2606 OID 17030)
 -- Name: products_price_history products_price_history_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -716,7 +720,7 @@ ALTER TABLE ONLY public.products_price_history
 
 
 --
--- TOC entry 4887 (class 2606 OID 16821)
+-- TOC entry 4888 (class 2606 OID 16821)
 -- Name: provider_category provider_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -725,7 +729,7 @@ ALTER TABLE ONLY public.provider_category
 
 
 --
--- TOC entry 4888 (class 2606 OID 16904)
+-- TOC entry 4889 (class 2606 OID 16904)
 -- Name: external_products provider_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -734,7 +738,7 @@ ALTER TABLE ONLY public.external_products
 
 
 --
--- TOC entry 4883 (class 2606 OID 16826)
+-- TOC entry 4884 (class 2606 OID 16826)
 -- Name: products provider_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -743,7 +747,7 @@ ALTER TABLE ONLY public.products
 
 
 --
--- TOC entry 4885 (class 2606 OID 16938)
+-- TOC entry 4886 (class 2606 OID 16938)
 -- Name: users_product_favorite users_product_favorite_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -752,7 +756,7 @@ ALTER TABLE ONLY public.users_product_favorite
 
 
 --
--- TOC entry 4895 (class 2606 OID 17114)
+-- TOC entry 4896 (class 2606 OID 17114)
 -- Name: users_roles users_roles_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -761,7 +765,7 @@ ALTER TABLE ONLY public.users_roles
 
 
 --
--- TOC entry 4896 (class 2606 OID 17119)
+-- TOC entry 4897 (class 2606 OID 17119)
 -- Name: users_roles users_roles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -769,11 +773,11 @@ ALTER TABLE ONLY public.users_roles
     ADD CONSTRAINT users_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
--- Completed on 2026-09-11 20:42:38
+-- Completed on 2026-09-15 17:11:57
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict f8jmF1G6g6390pBgytLBDbLD5Hd8GJDOEKxxnJuGg8TniXppEaCdCsc7XXWr9g9
+\unrestrict 1vFGWY38Krk7mCeLVcRxT1NGiJDfX5sNlXKNgqMgoGqxBDhX5s9DQXH6FuyVjmg
 

@@ -27,6 +27,11 @@ router.patch(
     controllers.resetPassword
 );
 
+router.post(
+    "/forgot-password",
+    controllers.forgotPassword
+)
+
 router.get(
     "/profile",
     auth,

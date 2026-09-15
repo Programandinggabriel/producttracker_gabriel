@@ -55,6 +55,7 @@ const findUserByUsername = async (username) => {
 
 const findUserByEmail = async (email) => {
     const query = `SELECT id, 
+                          name,
                           email 
                     FROM users
                    WHERE email = $1`
@@ -87,7 +88,8 @@ const updateDbUser = async (
 ) => {
     const query = `UPDATE users 
                     SET name = $1, 
-                        email = $2
+                        email = $2,
+                        updated = NOW()
                     WHERE id = $3
                    RETURNING id, name, email`;
     
@@ -105,7 +107,8 @@ const updateDbUserProfile = async (
     const query = `UPDATE users 
                     SET name = $1, 
                         email = $2,
-                        username = $3
+                        username = $3,
+                        updated = NOW()
                     WHERE id = $4
                    RETURNING id, name, email, username`;
     
@@ -125,7 +128,8 @@ const deleteDbUser = async (id) => {
 const resetDbUserPassword = async (id, newPassword) => {
     const hashedPassword = await hashPassword(newPassword);
     const query = `UPDATE users
-                    SET password = $1
+                    SET password = $1,
+                        last_reset_password = NOW()
                     WHERE id = $2
                     RETURNING *`;
     const values = [hashedPassword, id];
@@ -136,7 +140,8 @@ const resetDbUserPassword = async (id, newPassword) => {
 const changeDbUserPassword = async (id, newPassword) => {
     const hashedPassword = await hashPassword(newPassword);
     const query = `UPDATE users
-                    SET password = $1
+                    SET password = $1,
+                        last_change_password = NOW()
                     WHERE id = $2
                     RETURNING *`;
     const values = [hashedPassword, id];

@@ -6,8 +6,11 @@ const dbRole = require('../models/role');
 const dbProduct = require('../models/product');
 const dbProvider = require('../models/provider');
 const dbProductPriceAlert = require('../models/product-price-alerts');
+const userCache = require('../redis/user');
 const utilsExternalProduct = require('./utils/external-products');
 const { mapPreviewProduct, mapDetailProduct } = require('./utils/response-product-mapper');
+const { sendEmail } = require('./email/email');
+const { TemplateEmailForgorPassword } = require('../templates/email/forgot_password');
 
 require('dotenv').config();
 
@@ -194,12 +197,6 @@ const updateUser = async (
             }
         ); 
     }
-    
-    const updatedUser = await dbUser.updateDbUser(
-        id,
-        name,
-        email   
-    );
 
     let userRoles = await dbUser.getUserRoles(id);
 
@@ -247,6 +244,12 @@ const updateUser = async (
         }
     }
 
+    const updatedUser = await dbUser.updateDbUser(
+        id,
+        name,
+        email   
+    );
+
     userRoles = await dbUser.getUserRoles(id);
 
     updatedUser.roles = userRoles.map((item) => {
@@ -273,31 +276,105 @@ const deleteUser = async (id) => {
     return result;
 }
 
-const resetPassword = async (email, newPassword) => {
-    if (!email || !newPassword) {
+const resetPassword = async (token, newPassword) => {
+    if (!token || !newPassword) {
         throw new ThrowError(
-            "Missing required fields: email, newPassword", 
+            "Missing required fields: token, newPassword", 
             400, 
             "BAD_REQUEST"
         );
     }
     
-    const user = await dbUser.findUserByEmail(email)
+
+    let tokenData = null;
+    try{
+        tokenData = jwt.verify(
+            token,
+            process.env.JWT_SECRET 
+        )
+    }catch(error){
+        throw new ThrowError(
+            "Token invalid or expired", 
+            401,
+            "UNAUTHORIZED"
+        );
+    }
+
+    const userId = tokenData.id;
+    const user = await dbUser.findUserById(userId);
 
     if(!user){
         throw new ThrowError(
-            "User not found. No account is associated with the provided email.",
-            422,
-            "USER_NOT_FOUND",
-            {
-                email: email
-            }
-        )
+            `User with email ${email} dont exist`, 
+            404,
+            "USER_NOT_FOUND"
+        );
+    }
+    
+    const tokenAlreadyUsed = await userCache.validateUserToken(
+        user.id,
+        token
+    )
+
+    if(tokenAlreadyUsed.hit){
+        throw new ThrowError(
+            `Token already used`, 
+            409,
+            "TOKEN_ALREADY_USED"
+        );
+    }
+    
+    const reset = await dbUser.resetDbUserPassword(
+        user.id,
+        newPassword
+    )
+
+    await userCache.setUserToken(
+        user.id,
+        token
+    )
+}
+
+const forgotPassword = async (email) => {
+    if(!email){
+        throw new ThrowError(
+            "Missing required fields in body: email", 
+            400,
+            "BAD_REQUEST"
+        );
     }
 
-    const resetUserPassword = await dbUser.resetDbUserPassword(user.id, newPassword);
-   
-    return resetUserPassword;
+    const user = await dbUser.findUserByEmail(email);
+
+    if(!user){
+        throw new ThrowError(
+            `User with email ${email} dont exist`, 
+            404,
+            "USER_NOT_FOUND"
+        );
+    }
+
+
+    const token = jwt.sign(
+        {
+            id: user.id
+        },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: '5m'
+        }
+    )
+
+    const htmlContent = TemplateEmailForgorPassword(
+        user,
+        token
+    )
+
+    await sendEmail(
+        user.email,
+        'Restablece tu contraseña',
+        htmlContent
+    )
 }
 
 //User profile
@@ -912,6 +989,7 @@ module.exports = {
     updateUser,
     deleteUser,
     resetPassword,
+    forgotPassword,
     getUserProfile,
     updateUserProfile,
     changePassword,

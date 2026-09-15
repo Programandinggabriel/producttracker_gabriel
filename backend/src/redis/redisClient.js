@@ -2,6 +2,16 @@ require('dotenv').config()
 const logger = require('../config/logger');
 const { createClient } = require('redis');
 
+function logRedisError (err) {
+    logger.error(err.message, {
+        name: err.name,
+        data: err.data,
+        stack: err.stack,
+
+        code: "REDIS_ERROR"
+    });
+}
+
 const redisClient = createClient({
     url: process.env.REDIS_URL,
     socket: {
@@ -21,13 +31,7 @@ let lastLogTime = 0;
 redisClient.on('error', (err) => {
     const now = Date.now();
     if(now - lastLogTime > 5000){
-        logger.error(err.message, {
-            name: err.name,
-            data: err.data,
-            stack: err.stack,
-
-            code: "REDIS_ERROR"
-        });
+        logRedisError(err);
         
         console.error("Error, no se pudo conectar a redis");
         lastLogTime = now;
@@ -55,4 +59,5 @@ async function connectRedis() {
 module.exports = {
   redisClient,
   connectRedis,
+  logRedisError
 };

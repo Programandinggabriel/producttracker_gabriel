@@ -77,6 +77,31 @@
         }
       }
     },
+    "/users/forgot-password": {
+      "post": {
+        "tags": ["Users"],
+        "description": "Email restablecer contraseña",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/users/reset-password": {
       "patch": {
         "tags": ["Users"],
@@ -88,10 +113,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "email": {
+                "token": {
                   "example": "any"
                 },
-                "password": {
+                "new_password": {
                   "example": "any"
                 }
               }

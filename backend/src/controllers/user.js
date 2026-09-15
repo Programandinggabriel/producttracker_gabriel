@@ -70,13 +70,27 @@ const deleteUser = async (req, res, next) => {
 
 const resetPassword = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
-        const resetUserPassword = await userService.resetPassword(email, password);
-        res.json(resetUserPassword);
+        const { token, new_password } = req.body;
+        const resetUserPassword = await userService.resetPassword(
+          token,
+          new_password
+        );
+        res.status(200).json({ message: 'Password was reset success'});
     } catch (error) {
         next(error)
     }
 };
+
+const forgotPassword = async (req, res, next) => {
+  try{
+    const { email } = req.body;
+    const emailWasSend = await userService.forgotPassword(email);
+
+    res.status(200).json({ message: 'Email reset password was send' })
+  }catch(error){
+    next(error)
+  }
+}
 
 //User profile
 const getUserProfile = async (req, res, next) => {
@@ -264,6 +278,7 @@ module.exports = {
     updateUser,
     deleteUser,
     resetPassword,
+    forgotPassword,
     getUserProfile,
     updateProfile,
     changePassword,

@@ -8,7 +8,7 @@ export default function ForgotPassword() {
     
     return (
         <>
-            <div className="flex justify-center items-center h-screen">
+            <div className="flex justify-center items-center h-screen px-4">
                 <ResetPassword token={token?.toString() ?? ""}/>
             </div>
         </>

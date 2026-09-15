@@ -9,6 +9,7 @@ import { createUser } from "../../services/auth";
 
 export default function RegisterForm(){
     const [userWasCreated, setUserWasCreated] = useState(false);
+    const [userAuthorization, setUserAuthorization] = useState(false);
     const [formData, setFormData] = useState<RegisterData>({
         name: "",
         email: "",
@@ -118,13 +119,22 @@ export default function RegisterForm(){
             return;
         }
 
+        if(!userAuthorization){
+            addFormError({
+                typeError: 'required',
+                field: 'data_authorization',
+                message: '¿Autorizas el tratamiento de datos?'
+            })
+            return;
+        }
+
         await apiCreateUser(formData);
     }
 
     return(
-        <form onSubmit={(e) => onSubmitRegisterForm(e)} className="mx-auto flex w-full max-w-xl flex-col rounded-xl border border-gray-200 bg-white p-8 shadow-sm gap-3">
+        <form onSubmit={(e) => onSubmitRegisterForm(e)} className="flex w-full max-w-xl flex-col rounded-xl border border-gray-200 bg-white p-8 shadow-sm gap-3">
             <div>
-                <h2 className="text-2x1 font-bold text-gray-900">
+                <h2 className="text-2x1 text-center font-bold text-gray-900">
                     Crea tu cuenta
                 </h2>
             </div>
@@ -210,6 +220,23 @@ export default function RegisterForm(){
                     />
                 </div>
             </div>
+            <div className="flex">
+                <input 
+                    id="data_authorization" 
+                    type="checkbox"
+                    checked={userAuthorization}
+                    onChange={(e) => setUserAuthorization(e.target.checked)}
+                    className="w-5 h-5 mr-2 border border-gray-300 rounded-xs bg-neutral-secondary-medium"
+                >
+                </input>
+                <label htmlFor="data_authorization">
+                    <p className="font-bold text-sm">Autorizo el tratamiento de mis datos personales.</p> 
+                    <p className="text-xs">
+                        De acuerdo con la normativa de protección de datos, autorizo a Product Tracker a recolectar y almacenar mi nombre y correo electrónico para gestionar mi acceso y funcionamiento dentro de la aplicación. 
+                        Puedo solicitar la eliminación de mis datos en cualquier momento escribiendo a <a href="mailto:gabrielgaitanrendon@gmail.com" className="text-indigo underline">gabrielgaitanrendon@gmail.com</a>.
+                    </p>
+                </label>
+            </div>
             {
                 formErrors.map((error, index) => {
                     const typeAlert = ErrorAlertMap[error.typeError];
@@ -229,6 +256,7 @@ export default function RegisterForm(){
             >
                 Crear cuenta
             </button>
+            <p className="text-gray-500 text-sm text-center mt-4">¿Ya tienes una cuenta? <a className="text-indigo-700 hover:underline" href="/login">Iniciar sesión</a></p>
         </form>
     )
 }

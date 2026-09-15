@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
 };
 
 module.exports = {
-  allowedDevOrigins: ['192.168.1.3'],
+  allowedDevOrigins: ['127.0.0.1','192.168.1.3'],
   images: {
     remotePatterns: [
       new URL(`${process.env.NEXT_PUBLIC_API_URL}/images/**`),

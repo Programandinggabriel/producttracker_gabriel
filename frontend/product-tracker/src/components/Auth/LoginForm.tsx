@@ -6,6 +6,7 @@ import { FormError } from "../../types/form-error";
 import { ErrorAlertMap } from "../../types/alert";
 import Alert from "../Alert";
 import { loginUser } from "../../services/auth";
+import Image from "next/image";
 
 export default function LoginForm(){
     const [ loginFormData, setLoginFormData ] = useState<LoginData>({
@@ -92,13 +93,23 @@ export default function LoginForm(){
     }
     
     return (
-        <form onSubmit={(e) => onFormSubmmit(e)} className="mx-auto flex w-full max-w-md flex-col rounded-xl border border-gray-200 bg-white p-8 shadow-sm gap-3">
-            <div>
+        <form onSubmit={(e) => onFormSubmmit(e)} className="flex flex-col items-center w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-sm gap-3">
+            <div className="relative h-30 w-30">
+                <Image 
+                    src="/tracking.png" 
+                    fill
+                    sizes="120px"
+                    loading="eager"
+                    alt="tracker"
+                />
+            </div>
+            <p className="font-bold text-lg">Product tracker</p>
+            <div className="mt-5">
                 <h2 className="text-2x1 text-center font-bold text-gray-900">
                     Iniciar sesion
                 </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4 w-full">
                 <div className="flex flex-col gap-2">
                     <label htmlFor="username">
                         Username
@@ -147,11 +158,12 @@ export default function LoginForm(){
 
             <button
                 type="submit"
-                className="mt-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="mt-2 w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
                 Ingresar
             </button>
             <p className="text-gray-500 text-sm text-center mt-4">¿No tienes cuenta? <a className="text-indigo-700 hover:underline" href="/register">Registrate</a></p>
+            <a className="text-indigo-700 text-sm hover:underline" href="/forgot-password">Olvidaste tu contraseña</a>
         </form>
     )
 }

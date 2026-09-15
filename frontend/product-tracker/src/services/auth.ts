@@ -1,5 +1,5 @@
 import { AxiosError } from "axios";
-import {CreatePriceAlert, Favorite, LoginData, ProfileData, RegisterData, UpdateData, UpdatePriceAlert } from "../types/auth";
+import {CreatePriceAlert, Favorite, ForgotPassword, LoginData, ProfileData, RegisterData, UpdateData, UpdatePriceAlert } from "../types/auth";
 import { api, ApiError } from "./axios"
 import { ItemDetailProduct, ItemProduct } from "./products";
 
@@ -258,6 +258,51 @@ export const changePassword =  async (oldPassword: String, newPassword: String) 
         }
 
         const { data } = await api.patch<{message: string}>('/users/profile/change-password', payload);
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const resetPassword =  async (token: String, newPassword: String) => {
+       try{
+        const payload = {
+            token: token,
+            new_password: newPassword
+        }
+
+        const { data } = await api.patch<{message: string}>('/users/reset-password', payload);
+
+        return{
+            success: true,
+            data
+        }
+    }catch(error){
+        const err = error as AxiosError<ApiError>
+        
+        return {
+            success: false,
+            error: err.response
+        }
+    }
+}
+
+export const forgotPassword =  async (formForgotPassword: ForgotPassword) => {
+       try{
+        const payload = {
+            email: formForgotPassword.email
+        }
+
+        const { data } = await api.post<{message: string}>('/users/forgot-password', payload);
 
         return{
             success: true,

@@ -30,10 +30,10 @@ api.interceptors.response.use(
     response => response,
     error => {
         if(error.response?.status === 401){
-            if(error.config.url.includes('/login')){
+            if(error.config.url.includes('/login') || error.config.url.includes('/reset-password')){
                 return Promise.reject(error)
             }
-            
+            console.log(error.config.url.includes('/forgot-password/'), error.config.url)
             localStorage.removeItem('authToken');
             localStorage.removeItem('userRoles');
             window.location.href = '/login'

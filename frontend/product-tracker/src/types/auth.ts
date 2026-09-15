@@ -30,6 +30,15 @@ export type LoginData = {
     password: string
 };
 
+export type ForgotPassword = {
+    email: string;
+}
+
+export type ResetPassword = {
+    newPassword: string;
+    confirmPassword: string;
+}
+
 
 //FAVORITES
 

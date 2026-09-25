@@ -99,13 +99,19 @@ const getProductsByIds = async (arrayIds) => {
 const queryProducts = async (
     query,
     limit,
-    offset
+    offset,
+    min_price_filter,
+    max_price_filter
 ) => {
-    const params = new URLSearchParams({
+    let params = new URLSearchParams({
         q: query,
         limit: limit,
         offset: offset
     })
+
+    if(min_price_filter && max_price_filter){
+        params.append('filter', `price:[${min_price_filter}..${max_price_filter}],priceCurrency:USD` )
+    }
 
     let response = await ebayRequest(
         `${EBAY_API_URL}/buy/browse/v1/item_summary/search?${params}`
@@ -146,7 +152,13 @@ const queryProducts = async (
 }
 
 
-const getProductsByCategory = async (categoryIds, limit, offset) => {
+const getProductsByCategory = async (
+    categoryIds,
+    limit,
+    offset,
+    min_price_filter,
+    max_price_filter
+) => {
     if(!categoryIds.length){
         return [];
     }
@@ -176,6 +188,10 @@ const getProductsByCategory = async (categoryIds, limit, offset) => {
                 limit: String(subLimit),
                 offset: subOffset
             });
+
+            if(min_price_filter && max_price_filter){
+                params.append('filter', `price:[${min_price_filter}..${max_price_filter}],priceCurrency:USD` )
+            }
 
             let response = await ebayRequest(
                 `${EBAY_API_URL}/buy/browse/v1/item_summary/search?${params}`

@@ -45,7 +45,7 @@ const getCachedProductsByBlocks = async ({
                 CACHE_SIZE,
                 blockOffset
             );
-
+            
             await setCache(
                 blockOffset,
                 blockProducts
@@ -69,7 +69,14 @@ const getCachedProductsByBlocks = async ({
     return products;
 };
 
-const getQueryProducts = async (query, limit, offset) => {
+const getQueryProducts = async (
+    query, 
+    limit, 
+    offset,
+    provider_filter,
+    min_price_filter,
+    max_price_filter
+) => {
     const providers = await dbProvider.getProviders();
     const providerPromises = providers.map(
         (provider) => {
@@ -80,7 +87,9 @@ const getQueryProducts = async (query, limit, offset) => {
                 getCache: (blockOffset) =>
                     redisCache.getCacheQueryProducts(
                         provider.name,
-                        query, 
+                        query,
+                        min_price_filter,
+                        max_price_filter,
                         blockOffset
                     ),
                 
@@ -88,6 +97,8 @@ const getQueryProducts = async (query, limit, offset) => {
                     redisCache.cacheProductsQuery(
                         provider.name,
                         query,
+                        min_price_filter,
+                        max_price_filter,
                         blockOffset,
                         blockProducts
                     ),
@@ -96,7 +107,9 @@ const getQueryProducts = async (query, limit, offset) => {
                     provider.module.queryProducts(
                         query,
                         limit,
-                        offset
+                        offset,
+                        min_price_filter,
+                        max_price_filter
                     )
             })
 
@@ -105,7 +118,7 @@ const getQueryProducts = async (query, limit, offset) => {
     )
 
     const results = await Promise.all(providerPromises);
-    
+
     const previewData = await Promise.all(
         results.flat().map(async (product) => {
             const provider = await dbProvider.getProvider(product.providerId)
@@ -121,11 +134,25 @@ const getQueryProducts = async (query, limit, offset) => {
         })
     )
 
-    return previewData
+    let filtered = previewData;
+    if(provider_filter){
+        filtered = previewData.filter((product) => {
+            return provider_filter.includes(product.provider.id)
+        })
+    }
+
+    return filtered
 }
 
 
-const getProductsByCategory = async (idCat, limit, offset) => {
+const getProductsByCategory = async (
+    idCat, 
+    limit, 
+    offset,
+    provider_filter,
+    min_price_filter,
+    max_price_filter
+) => {
     const providers = await dbProvider.getProviders();
     const providerPromises = providers.map(
         async(provider) => {
@@ -144,6 +171,8 @@ const getProductsByCategory = async (idCat, limit, offset) => {
                     redisCache.getCacheProductsByCategory(
                         idCat,
                         provider.name,
+                        min_price_filter,
+                        max_price_filter,
                         blockOffset
                     ),
                 
@@ -151,6 +180,8 @@ const getProductsByCategory = async (idCat, limit, offset) => {
                     redisCache.cacheProductsByCategory(
                         idCat,
                         provider.name,
+                        min_price_filter,
+                        max_price_filter,
                         blockOffset,
                         blockProducts
                     ),
@@ -159,13 +190,17 @@ const getProductsByCategory = async (idCat, limit, offset) => {
                     provider.module.getProductsByCategory(
                         categoryIds,
                         limit,
-                        offset
+                        offset,
+                        min_price_filter,
+                        max_price_filter
                     ),
 
                 getState: () => 
                     dbProviderCategoryCache.getCacheState(
                         idCat,
-                        provider.name
+                        provider.name,
+                        min_price_filter ?? null,
+                        max_price_filter ?? null
                     ),
                 
                 canStop: (state, blockOffset) => 
@@ -177,10 +212,11 @@ const getProductsByCategory = async (idCat, limit, offset) => {
                     dbProviderCategoryCache.upsert({
                         categoryId: idCat,
                         providerId: provider.name,
+                        min_price_filter: min_price_filter ?? null,
+                        max_price_filter: max_price_filter ?? null,
                         hasMore: products.length === CACHE_SIZE,
                         lastProviderOffset: offset
                     })
-        
             });
 
             return products;
@@ -204,7 +240,14 @@ const getProductsByCategory = async (idCat, limit, offset) => {
         })
     )
 
-    return previewData
+    let filtered = previewData;
+    if(provider_filter){
+        filtered = previewData.filter((product) => {
+            return provider_filter.includes(product.provider.id)
+        })
+    }
+
+    return filtered;
 }
 
 

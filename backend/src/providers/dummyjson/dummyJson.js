@@ -1,5 +1,6 @@
 require('dotenv').config()
 const { Product } = require('../../models/product');
+const filterProducts = require('./product-filter');
 const mapDummyJsonProduct = require('./product-mapper');
 
 const DUMMY_JSON_API = process.env.DUMMYJSON_PRODUCTS_API
@@ -39,7 +40,9 @@ const getProductsByIds = async (arrayIds) => {
 const queryProducts = async (
     query, 
     limit,
-    offset
+    offset,
+    min_price_filter,
+    max_price_filter
 ) => {
     const params = new URLSearchParams({
         q: query,
@@ -65,11 +68,24 @@ const queryProducts = async (
     const response = await result.json();
     const products = response.products;
 
-    return products.map((product) => mapDummyJsonProduct(product))
+    const productsDummyMaped = products.map((product) => mapDummyJsonProduct(product));
+    const filtered = filterProducts(
+        productsDummyMaped, 
+        min_price_filter,
+        max_price_filter
+    )
+
+    return filtered
 }
 
 
-const getProductsByCategory = async (categoryIds, limit, offset) => {
+const getProductsByCategory = async (
+    categoryIds, 
+    limit, 
+    offset,
+    min_price_filter,
+    max_price_filter
+) => {
     if (!categoryIds.length) {
         return [];
     }
@@ -119,7 +135,15 @@ const getProductsByCategory = async (categoryIds, limit, offset) => {
         })
     );
     
-    return results.flat();
+    const mappedProducts = results.flat();
+
+    const filtered = filterProducts(
+        mappedProducts, 
+        min_price_filter, 
+        max_price_filter
+    );
+
+    return filtered;
 }
 
 module.exports = {

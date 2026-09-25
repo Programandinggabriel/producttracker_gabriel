@@ -6,22 +6,54 @@ const productCacheService = require('./cache/product-cache');
 const { ThrowError } = require("../errors/AppError");
 const { mapPreviewProduct, mapDetailProduct } = require('./utils/response-product-mapper');
 
+const ALLOWED_SORTBY = ['price', 'currency'];
+const ALLOWED_ORDER = ['ASC', 'DESC'];
+
 //Consume tabla con vista previa
 const getProducts = async (
     limit,
     offset,
     sortBy,
-    order
+    order,
+    provider_filter,
+    min_price_filter,
+    max_price_filter
 ) => {
-    if(!dbProduct.ALLOWED_SORTBY.includes(sortBy)){
+    if(!ALLOWED_SORTBY.includes(sortBy)){
         throw new ThrowError(
             'Ordenamiento incorrecto',
             400,
             'BAD_REQUEST'
         )
-    }else if(!dbProduct.ALLOWED_ORDER.includes(order.toUpperCase())){
+    }else if(!ALLOWED_ORDER.includes(order.toUpperCase())){
         throw new ThrowError(
             'Orden incorrecto',
+            400,
+            'BAD_REQUEST'
+        )
+    }
+
+    if(provider_filter){
+        const regex = /\[.*\]/;
+
+        if(!regex.test(provider_filter)){
+            throw new ThrowError(
+                'Not valid array provider',
+                400,
+                'BAD_REQUEST'
+            )
+        }
+
+        provider_filter = provider_filter.slice(1, -1).split(', ');
+    }
+
+    const regexOnlyNumbers = /^\d+(\.\d{1,2})?$/;
+
+    if((min_price_filter && !regexOnlyNumbers.test(min_price_filter)) || 
+        (max_price_filter && !regexOnlyNumbers.test(max_price_filter))
+    ){
+        throw new ThrowError(
+            'Invalid formats filter price',
             400,
             'BAD_REQUEST'
         )
@@ -31,7 +63,10 @@ const getProducts = async (
         limit,
         offset,
         sortBy,
-        order.toUpperCase()
+        order.toUpperCase(),
+        provider_filter,
+        min_price_filter,
+        max_price_filter
     )
     
     const previewData = await Promise.all(
@@ -53,6 +88,16 @@ const getProducts = async (
         )
     );
 
+    let filters = {};
+
+    if(provider_filter){
+        filters.provider = provider_filter
+    }
+    if(min_price_filter && max_price_filter){
+        filters.min_price = min_price_filter
+        filters.max_price = max_price_filter
+    }
+
     return {
         products: previewData,
         meta: {
@@ -60,6 +105,7 @@ const getProducts = async (
             offset,
             sortBy,
             order,
+            filters,
             hasMore: limit <= previewData.length
         }
     }
@@ -70,7 +116,10 @@ const getQueryProducts = async (
     limit,
     offset,
     sortBy,
-    order
+    order,
+    provider_filter,
+    min_price_filter,
+    max_price_filter
 ) => {    
     if(!query){
        throw new ThrowError(
@@ -80,15 +129,41 @@ const getQueryProducts = async (
         ) 
     }
 
-    if(!dbProduct.ALLOWED_SORTBY.includes(sortBy)){
+    if(!ALLOWED_SORTBY.includes(sortBy)){
         throw new ThrowError(
             'Ordenamiento incorrecto',
             400,
             'BAD_REQUEST'
         )
-    }else if(!dbProduct.ALLOWED_ORDER.includes(order.toUpperCase())){
+    }else if(!ALLOWED_ORDER.includes(order.toUpperCase())){
         throw new ThrowError(
             'Orden incorrecto',
+            400,
+            'BAD_REQUEST'
+        )
+    }
+
+    if(provider_filter){
+        const regex = /\[.*\]/;
+
+        if(!regex.test(provider_filter)){
+            throw new ThrowError(
+                'Not valid array provider',
+                400,
+                'BAD_REQUEST'
+            )
+        }
+
+        provider_filter = provider_filter.slice(1, -1).split(', ');
+    }
+
+    const regexOnlyNumbers = /^\d+(\.\d{1,2})?$/;
+
+    if((min_price_filter && !regexOnlyNumbers.test(min_price_filter)) || 
+        (max_price_filter && !regexOnlyNumbers.test(max_price_filter))
+    ){
+        throw new ThrowError(
+            'Invalid formats filter price',
             400,
             'BAD_REQUEST'
         )
@@ -103,12 +178,27 @@ const getQueryProducts = async (
     const previewData = await productCacheService.getQueryProducts(
         normalizeQuery,
         limit + 1,
-        offset
+        offset,
+        min_price_filter,
+        max_price_filter
     );
 
-    previewData.sort((a, b) => {
-        const valueA = a[sortBy];
-        const valueB = b[sortBy];
+    const paginated = previewData.slice(
+        offset,
+        offset + limit
+    );
+
+    
+    paginated.sort((a, b) => {
+        const mapperColumns = {
+            price: 'price',
+            currency: 'currency',
+        }
+
+        const column = mapperColumns[sortBy];
+
+        const valueA = a[column];
+        const valueB = b[column];
 
         let comparison;
 
@@ -126,14 +216,19 @@ const getQueryProducts = async (
         } else {
             comparison = String(valueA).localeCompare(String(valueB));
         }
-
+        
         return order === 'desc' ? -comparison : comparison;
     });
 
-    const paginated = previewData.slice(
-        offset,
-        offset + limit
-    );
+    let filters = {};
+
+    if(provider_filter){
+        filters.provider = provider_filter
+    }
+    if(min_price_filter && max_price_filter){
+        filters.min_price = min_price_filter
+        filters.max_price = max_price_filter
+    }
 
     return {
         products: paginated,
@@ -142,6 +237,7 @@ const getQueryProducts = async (
             offset,
             sortBy,
             order,
+            filters,
             hasMore: offset + limit < previewData.length
         }
     };
@@ -152,17 +248,46 @@ const getProductsByCategory = async (
     limit, 
     offset, 
     sortBy, 
-    order
+    order,
+    provider_filter,
+    min_price_filter,
+    max_price_filter
 ) => {    
-    if(!dbProduct.ALLOWED_SORTBY.includes(sortBy)){
+    if(!ALLOWED_SORTBY.includes(sortBy)){
         throw new ThrowError(
             'Ordenamiento incorrecto',
             400,
             'BAD_REQUEST'
         )
-    }else if(!dbProduct.ALLOWED_ORDER.includes(order.toUpperCase())){
+    }else if(!ALLOWED_ORDER.includes(order.toUpperCase())){
         throw new ThrowError(
             'Orden incorrecto',
+            400,
+            'BAD_REQUEST'
+        )
+    }
+
+    if(provider_filter){
+        const regex = /\[.*\]/;
+
+        if(!regex.test(provider_filter)){
+            throw new ThrowError(
+                'Not valid array provider',
+                400,
+                'BAD_REQUEST'
+            )
+        }
+
+        provider_filter = provider_filter.slice(1, -1).split(', ');
+    }
+
+    const regexOnlyNumbers = /^\d+(\.\d{1,2})?$/;
+
+    if((min_price_filter && !regexOnlyNumbers.test(min_price_filter)) || 
+        (max_price_filter && !regexOnlyNumbers.test(max_price_filter))
+    ){
+        throw new ThrowError(
+            'Invalid formats filter price',
             400,
             'BAD_REQUEST'
         )
@@ -171,10 +296,18 @@ const getProductsByCategory = async (
     const previewData = await productCacheService.getProductsByCategory(
         idCat, 
         limit + 1,
-        offset
+        offset,
+        provider_filter,
+        min_price_filter,
+        max_price_filter
     );
-    
-    previewData.sort((a, b) => {
+
+    const paginated = previewData.slice(
+        offset,
+        offset + limit
+    );
+
+    paginated.sort((a, b) => {
         const valueA = a[sortBy];
         const valueB = b[sortBy];
 
@@ -197,11 +330,16 @@ const getProductsByCategory = async (
 
         return order === 'desc' ? -comparison : comparison;
     });
-    
-    const paginated = previewData.slice(
-        offset,
-        offset + limit
-    );
+
+    let filters = {};
+
+    if(provider_filter){
+        filters.provider = provider_filter
+    }
+    if(min_price_filter && max_price_filter){
+        filters.min_price = min_price_filter
+        filters.max_price = max_price_filter
+    }
 
     return {
         products: paginated,
@@ -210,6 +348,7 @@ const getProductsByCategory = async (
             offset,
             sortBy,
             order,
+            filters,
             hasMore: offset + limit < previewData.length
         }
     };

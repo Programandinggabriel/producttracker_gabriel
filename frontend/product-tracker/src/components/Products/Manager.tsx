@@ -1,22 +1,47 @@
 'use client'
 
-import { useEffect, useState } from "react";
-import ListProducts from "./ListProducts";
-import QueryCategory from "./QueryCategory";
+import { useEffect, useMemo, useState } from "react";
 import { getCategoryProducts, getProducts, getQueryProducts,type ItemProduct, PaginationMeta } from "@/src/services/products";
+import { useRouter, useSearchParams } from "next/navigation";
+import ListProducts from "./ListProducts";
+import DataQuery from "./DataQuery";
 import Pagination from "../Pagination";
 import ModalError from "../ModalError";
-import { useRouter, useSearchParams } from "next/navigation";
+import { ApplyValues, type CurrentApplyValues } from "@/src/types/apply_values";
+
+type UrlSearchParams = {
+    search: string | 'initial' | 'category' | 'query';
+    limit: number;
+    offset: number;
+    provider: Array<string> | null;
+    minPrice: string | null;
+    maxPrice: string | null;
+    sortBy: string | null;
+    order: string | null;
+    query: string;
+    category: string
+}
+
 
 export default function Manager(){
     const router = useRouter();
     const searchParams = useSearchParams();
     
     const search = searchParams.get('search') ?? 'initial';
-    const limit = String(searchParams.get('limit') ?? 20);
-    const offset = String(searchParams.get('offset') ?? 0);
-    const query = searchParams.get('query') ?? '';
-    const category = searchParams.get('category') ?? '';
+    
+    const limit = searchParams.get('limit') ?? 20;
+    const offset = searchParams.get('offset') ?? 0;
+    const provider = searchParams.get('provider') ?? null;
+    const minPrice = searchParams.get('minPrice') ?? null;
+    const maxPrice = searchParams.get('maxPrice') ?? null;
+
+    const sortBy = searchParams.get('sortBy') ?? null;
+    const order = searchParams.get('order') ?? null;
+
+    const query = searchParams.get('query') ?? "";
+    const category = searchParams.get('category') ?? "";
+
+    const [urlSearchParams, setUrlSearchParams] = useState<UrlSearchParams | null>(null)
 
     const [isLoading, setIsLoading] = useState(false);
     const [isApiError, setIsApiError] = useState(false);
@@ -28,22 +53,44 @@ export default function Manager(){
     const [products, setProducts] = useState<ItemProduct[]>([]);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
 
-    const getApiProducts = async(
-        search: string, 
-        limit: number, 
-        offset: number, 
-        query: string, 
-        category: string
-    ) => {
+    const getApiProducts = async() => {
+        if(urlSearchParams === null) return;
+
         let products =  null;
-        
+
         setIsLoading(true)
-        if(search === 'initial'){
-            products = await getProducts(limit, offset);
-        }else if(search === 'query'){
-            products = await getQueryProducts(query, limit, offset)
-        }else if (search === 'category'){
-            products = await getCategoryProducts(category, limit, offset)
+        if(urlSearchParams.search === 'initial'){
+            products = await getProducts(
+                urlSearchParams.provider,
+                urlSearchParams.minPrice,
+                urlSearchParams.maxPrice,
+                urlSearchParams.sortBy,
+                urlSearchParams.order,
+                urlSearchParams.limit, 
+                urlSearchParams.offset
+            );
+        }else if(urlSearchParams.search === 'query'){
+            products = await getQueryProducts(
+                urlSearchParams.query,
+                urlSearchParams.provider,
+                urlSearchParams.minPrice,
+                urlSearchParams.maxPrice,
+                urlSearchParams.sortBy,
+                urlSearchParams.order,
+                urlSearchParams.limit, 
+                urlSearchParams.offset
+            )
+        }else if (urlSearchParams.search === 'category'){
+            products = await getCategoryProducts(
+                urlSearchParams.category, 
+                urlSearchParams.provider,
+                urlSearchParams.minPrice,
+                urlSearchParams.maxPrice,
+                urlSearchParams.sortBy,
+                urlSearchParams.order,
+                urlSearchParams.limit, 
+                urlSearchParams.offset
+            )
         }
 
         if(products?.success){
@@ -76,20 +123,51 @@ export default function Manager(){
     }
 
     useEffect(() => {
-        getApiProducts(
-            search,
-            Number(limit), 
-            Number(offset),
-            query,
-            category
-        )
+        function isValidSearch (search: UrlSearchParams['search']): search is UrlSearchParams['search'] {
+            const allowedSearch: Array<UrlSearchParams['search']> = [
+                'initial',
+                'query',
+                'category'
+            ]
+
+            return allowedSearch.includes(search)
+        }
+
+        const arrayProviders = provider !== null
+            ? provider.slice(1 , -1).split(", ")
+            : null;
+
+        setUrlSearchParams(prev => ({
+            ...prev,
+            search: isValidSearch(search) ? search : '',
+            limit:  Number(limit),
+            offset: Number(offset),
+            query: query,
+            category: category,
+            provider: arrayProviders,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            sortBy: sortBy,
+            order: order
+        }))
     }, [
         search,
         limit,
         offset,
         query,
-        category
+        category,
+        provider,
+        minPrice,
+        maxPrice,
+        sortBy,
+        order
     ])
+
+    useEffect(() => {
+        if(urlSearchParams){
+            getApiProducts()
+        }
+    }, [urlSearchParams])
 
     const modifiedThumbnailProduct = (providerId: String, thumbnail: string) => {
         const regularExpresion = /s-l\d+\.(?:jpg|jpeg|png|webp)$/i;
@@ -113,20 +191,62 @@ export default function Manager(){
         router.push(`?${params.toString()}`)
     }
 
-    function handleChangeCategory(category: string) {
+    function handleClickApply (values: ApplyValues){
         const params = new URLSearchParams(searchParams.toString());
-
-        params.set('search', 'category');
-        params.set('category', category);
-        params.delete('query');
-        params.set('offset', '0');
-
-        router.push(`?${params.toString()}`);
+    
+        values.filters.forEach(item => {
+            if(item.field === 'category'){
+                if(item.value === null){
+                    params.delete('search', 'category')
+                    params.delete('category', category)
+                }else{
+                    params.delete('query', query)
+                    params.set('category', item.value.toString())
+                    params.set('search', 'category')
+                }
+            }
+            if(item.field === 'provider'){
+                if(item.value === null){
+                    if(provider)
+                        params.delete('provider', provider)
+                }else if(Array.isArray(item.value)){
+                    params.set('provider', `[${item.value.join(", ")}]`)
+                }
+            }
+            if(item.field === 'price'){
+                if(item.value === null){
+                    if (minPrice && maxPrice){
+                        params.delete('minPrice', minPrice)
+                        params.delete('maxPrice', maxPrice)
+                    }
+                }else if(typeof(item.value) === 'object' && !Array.isArray(item.value)){
+                    params.set('minPrice', item.value.min)
+                    params.set('maxPrice', item.value.max)
+                }
+            }
+        })
+        
+        values.order.forEach(item => {
+            if(item.field === 'price'){
+                if(item.direction === null){
+                    if(order){
+                        params.delete('sortBy', 'price')
+                        params.delete('order', order)
+                    }
+                }else{
+                    params.set('sortBy', 'price')
+                    params.set('order', item.direction)
+                }
+            }
+        })
+        
+        router.push(`?${params.toString()}`)
     }
 
     function handleSendQueryText (query: string){
         const params = new URLSearchParams(searchParams.toString())
 
+        params.delete('category', category)
         params.set('search', 'query');
         params.set('query', query);
         params.delete('category');
@@ -135,16 +255,61 @@ export default function Manager(){
         router.push(`?${params.toString()}`)
     }
 
+    const normalizeDataFromDataQuery = useMemo(() => {
+        const currentData: CurrentApplyValues = {
+            filters: [],
+            order: []
+        }
+
+        if(urlSearchParams){
+            if(urlSearchParams.category !== ""){
+                currentData.filters.push(
+                    {
+                        field: 'category',
+                        value: urlSearchParams.category
+                    }
+                )
+            }
+            if(urlSearchParams.provider){
+                currentData.filters.push({
+                    field: 'provider',
+                    value: urlSearchParams.provider
+                })
+            }
+            if(urlSearchParams.maxPrice && urlSearchParams.minPrice){
+                currentData.filters.push({
+                    field: 'price',
+                    value: {
+                        min: urlSearchParams.minPrice,
+                        max: urlSearchParams.maxPrice
+                    }
+                })
+            }
+            if(urlSearchParams.sortBy && urlSearchParams.order){
+                currentData.order.push({
+                    field: 'price',
+                    direction: urlSearchParams.order
+                })
+            }
+        }
+
+        return currentData;
+    }, [urlSearchParams])
+
     return (
         <>
-            <QueryCategory 
-                onCategoryChange={(category) => {handleChangeCategory(category)}} 
+            <DataQuery
+                currentValues={normalizeDataFromDataQuery}
+                currentQuery={urlSearchParams?.query ?? ''}
+                onApply={(values) => handleClickApply(values)}
                 onSendQueryText={(query) => {handleSendQueryText(query)}}
             />
+
             <ListProducts
                 products={products}
                 isLoading={isLoading}
             />
+
             <div className="flex flex-row justify-center mb-6">
                 <Pagination 
                     paginateMetaData={meta} 

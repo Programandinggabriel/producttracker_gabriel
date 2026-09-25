@@ -24,11 +24,11 @@ export default function ListProducts({ products, isLoading }:ListProductsProps){
                     })
                     
                 )}
-                {
-                    products.map((product, index) => {
+                {products.map((product) => {
+                        const productKey = `${product.provider.id}-${product.product_id}`;
                         return (
                             <Product 
-                                key={index} 
+                                key={productKey} 
                                 product={product}
                             />
                         )

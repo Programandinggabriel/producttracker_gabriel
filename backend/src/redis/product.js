@@ -15,11 +15,17 @@ function logRedisError (err) {
 async function cacheProductsQuery(
     provider,
     query,
+    min_price_filter,
+    max_price_filter,
     offset,
     products
 ) {
     try{
-        const redisKey = `products:provider:${provider}:query:${query}`;
+        let redisKey = `products:provider:${provider}:query:${query}`;
+        if(min_price_filter && max_price_filter){
+            redisKey += `:min_price_filter:${min_price_filter}:max_price_filter:${max_price_filter}`
+        }
+
         const cacheField = String(offset);
 
         const timeCache = 30; //min
@@ -41,10 +47,16 @@ async function cacheProductsQuery(
 async function getCacheQueryProducts(
     provider,
     query,
+    min_price_filter,
+    max_price_filter,
     offset
 ) {
     try{
-        const redisKey = `products:provider:${provider}:query:${query}`;
+        let redisKey = `products:provider:${provider}:query:${query}`;
+        if(min_price_filter && max_price_filter){
+            redisKey += `:min_price_filter:${min_price_filter}:max_price_filter:${max_price_filter}`
+        }
+        
         const cacheField = String(offset);
 
         const cached = await redisClient.hGet(
@@ -80,11 +92,17 @@ async function getCacheQueryProducts(
 async function cacheProductsByCategory(
     idCategory,
     provider,
+    min_price_filter,
+    max_price_filter,
     offset,
     products
 ) {
     try{
-        const redisKey = `products:provider:${provider}:category:${idCategory}`;
+        let redisKey = `products:provider:${provider}:category:${idCategory}`;
+        if(min_price_filter && max_price_filter){
+            redisKey += `:min_price_filter:${min_price_filter}:max_price_filter:${max_price_filter}`
+        }
+        
         const cacheField = String(offset);
 
         const timeCache = 120; //min
@@ -105,9 +123,19 @@ async function cacheProductsByCategory(
     }
 }
 
-async function getCacheProductsByCategory(idCategory, provider, offset) {
+async function getCacheProductsByCategory(
+    idCategory, 
+    provider, 
+    min_price_filter,
+    max_price_filter,
+    offset
+) {
     try{
-        const redisKey = `products:provider:${provider}:category:${idCategory}`;
+        let redisKey = `products:provider:${provider}:category:${idCategory}`;
+        if(min_price_filter && max_price_filter){
+            redisKey += `:min_price_filter:${min_price_filter}:max_price_filter:${max_price_filter}`
+        }
+
         const cacheField = String(offset);
 
         const productData = await redisClient.hGet(redisKey, cacheField)

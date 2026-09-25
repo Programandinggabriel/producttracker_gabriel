@@ -600,6 +600,21 @@
             "name": "order",
             "in": "query",
             "type": "string"
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "min_price",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "max_price",
+            "in": "query",
+            "type": "string"
           }
         ],
         "responses": {
@@ -617,6 +632,11 @@
         "tags": ["Products"],
         "description": "Realizar consulta de productos",
         "parameters": [
+           {
+            "name": "q",
+            "in": "query",
+            "type": "string"
+          },
           {
             "name": "limit",
             "in": "query",
@@ -638,7 +658,17 @@
             "type": "string"
           },
           {
-            "name": "q",
+            "name": "provider",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "min_price",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "max_price",
             "in": "query",
             "type": "string"
           }
@@ -681,6 +711,21 @@
           },
           {
             "name": "order",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "min_price",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "max_price",
             "in": "query",
             "type": "string"
           }

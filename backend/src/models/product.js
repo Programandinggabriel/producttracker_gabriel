@@ -1,8 +1,5 @@
 const { pool } = require('../config/db')
 
-const ALLOWED_SORTBY = ['id', 'title', 'price', 'created'];
-const ALLOWED_ORDER = ['ASC', 'DESC'];
-
 class Product {
     constructor({
         productId,
@@ -56,6 +53,9 @@ const getProducts = async (
   offset,
   sortBy,
   order,
+  provider_filter,
+  min_price_filter,
+  max_price_filter
 ) => {
   const params = [];
 
@@ -67,13 +67,27 @@ const getProducts = async (
                       currency,
                       url
                 FROM products`;
+    
+  if(provider_filter){
+    params.push(provider_filter)
+    query += ` WHERE provider_id = ANY($${params.length})`
+  }
+
+  if(min_price_filter && max_price_filter){
+    if(query.indexOf('WHERE') > 0){
+        query += ` AND price BETWEEN ${min_price_filter} AND ${max_price_filter}`
+    }else{
+        query += ` WHERE price BETWEEN ${min_price_filter} AND ${max_price_filter}`
+    }
+  }
 
   if (sortBy) {
-    const safeOrder = ALLOWED_ORDER.includes(order?.toUpperCase())
-      ? order.toUpperCase()
-      : 'ASC';
+    const mapperColumns = {
+        price: 'price',
+        currency: 'currency'
+    }
     
-    query += ` ORDER BY ${sortBy} ${safeOrder}, id ASC`;
+    query += ` ORDER BY ${mapperColumns[sortBy]} ${order.toUpperCase()}, id ASC`;
   }
 
   if (limit !== undefined) {
@@ -338,8 +352,6 @@ const createImageExternalProduct = async (id, urlImage, position) => {
 
 
 module.exports = {
-    ALLOWED_ORDER,
-    ALLOWED_SORTBY,
     Product,
     getProduct,
     getProducts,

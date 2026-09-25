@@ -6,12 +6,17 @@ const getProducts = async (req, res, next) => {
         const offset = parseInt(req.query.offset) || 0;
         const sortBy = req.query.sort ?? 'price';
         const order = req.query.order ?? 'asc';
+        
+        const { provider, min_price, max_price } = req.query;
 
         const products = await productService.getProducts(
             limit,
             offset,
             sortBy,
-            order
+            order,
+            provider,
+            min_price,
+            max_price
         );
         return res.status(200).json(products)
     } catch (error) {
@@ -27,12 +32,17 @@ const queryProducts = async (req, res, next) => {
         const sortBy = req.query.sort ?? 'price';
         const order = req.query.order ?? 'asc';
 
+        const { provider, min_price, max_price } = req.query;
+
         const products = await productService.getQueryProducts(
             q,
             limit,
             offset,
             sortBy,
-            order
+            order,
+            provider,
+            min_price,
+            max_price
         )
         
         return res.status(200).json(products)
@@ -50,12 +60,17 @@ const getProductsByCategory = async (req, res, next) => {
         const sortBy = req.query.sort ?? 'price';
         const order = req.query.order ?? 'asc';
 
+        const { provider, min_price, max_price } = req.query;
+
         const products = await productService.getProductsByCategory(
             idCat, 
-            limit, 
-            offset, 
+            limit,
+            offset,
             sortBy, 
-            order
+            order,
+            provider,
+            min_price,
+            max_price
         )
 
         return res.status(200).json(products)

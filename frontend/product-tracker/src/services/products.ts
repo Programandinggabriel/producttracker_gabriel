@@ -67,12 +67,35 @@ export const getProductById = async(provider:string, id: string) => {
     }
 }
 
-export const getProducts = async(limit: Number, offset: Number) => {
+export const getProducts = async(
+    provider: Array<string> | null,
+    minPrice: string | null,
+    maxPrice: string | null,
+    sortBy: string | null,
+    order: string | null,
+    limit: Number, 
+    offset: Number
+) => {
     try{
         const params = new URLSearchParams({
             limit: limit.toString(),
             offset: offset.toString()
         })
+
+        if(provider !== null){
+            params.set('provider', `[${provider.join(', ')}]`)
+        }
+
+        if(maxPrice && minPrice){
+            params.set('min_price', minPrice)
+            params.set('max_price', maxPrice)
+        }
+
+        if(sortBy && order){
+            params.set('sort', sortBy)
+            params.set('order', order)
+        }
+
         const { data } = await api.get<Response>(`/products?${params}`);
         
         return{
@@ -89,13 +112,37 @@ export const getProducts = async(limit: Number, offset: Number) => {
     }
 }
 
-export const getQueryProducts = async(query:string, limit: Number, offset: Number) => {
+export const getQueryProducts = async(
+    query:string, 
+    provider: Array<string> | null,
+    minPrice: string | null,
+    maxPrice: string | null,
+    sortBy: string | null,
+    order: string | null,
+    limit: Number, 
+    offset: Number
+) => {
     try{
         const params = new URLSearchParams({
             q: query,
             limit: limit.toString(),
             offset: offset.toString()
         })
+
+        if(provider !== null){
+            params.set('provider', `[${provider.join(", ")}]`)
+        }
+
+        if(maxPrice && minPrice){
+            params.set('min_price', minPrice)
+            params.set('max_price', maxPrice)
+        }
+
+        if(sortBy && order){
+            params.set('sort', sortBy)
+            params.set('order', order)
+        }
+
         const { data } = await api.get<Response>(`/products/query?${params}`);
         
         return{
@@ -112,12 +159,36 @@ export const getQueryProducts = async(query:string, limit: Number, offset: Numbe
     }
 }
 
-export const getCategoryProducts = async(category:string, limit: Number, offset: Number) => {
+export const getCategoryProducts = async(
+    category:string, 
+    provider: Array<string> | null,
+    minPrice: string | null,
+    maxPrice: string | null,
+    sortBy: string | null,
+    order: string | null,
+    limit: Number, 
+    offset: Number
+) => {
     try{
         const params = new URLSearchParams({
             limit: limit.toString(),
             offset: offset.toString()
         })
+
+        if(provider !== null){
+            params.set('provider', `[${provider.join(", ")}]`)
+        }
+
+        if(maxPrice && minPrice){
+            params.set('min_price', minPrice)
+            params.set('max_price', maxPrice)
+        }
+
+        if(sortBy && order){
+            params.set('sort', sortBy)
+            params.set('order', order)
+        }
+
         const { data } = await api.get<Response>(`/products/category/${category}?${params}`);
         
         return{

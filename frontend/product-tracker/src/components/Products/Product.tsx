@@ -7,9 +7,8 @@ type ItemProductProps = {
     product: ItemProduct;
 }
 
-export default function Product({ product }: ItemProductProps){
+export default function Product({ product }: ItemProductProps){    
     const thubnailImage = product.thumbnail;
-    const shimmerB64 = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZThlOGU4Ii8+PC9zdmc+"
 
     const getUrlLogoProvider = (urlLogo: String) => {
         return `${process.env.NEXT_PUBLIC_API_URL}${urlLogo}`;
@@ -18,18 +17,15 @@ export default function Product({ product }: ItemProductProps){
     return(
     <>
         <div className="w-full max-w-[300px] bg-neutral-primary-soft p-6 border border-default rounded-base shadow-xs">
-            <div className="relative mx-auto w-[120px] h-[120px] mb-6"> 
+            <div className="relative mx-auto w-[120px] h-[120px] mb-6 contain-strict"> 
                 {thubnailImage && (
                     <Image
-                        key={thubnailImage}
                         src={thubnailImage} 
-                        alt="product" 
+                        alt="product"
                         fill
                         sizes="120px"
-                        priority
-                        placeholder="blur"
-                        blurDataURL={shimmerB64}   
-                        className="rounded-base object-contain"  
+                        className="rounded-base object-contain bg-neutral-200/50"
+                        loading="eager"
                     />
                 )}
             </div>
@@ -53,10 +49,11 @@ export default function Product({ product }: ItemProductProps){
                         <Image
                             src={getUrlLogoProvider(product.provider.logo)}
                             alt={`logo-${product.provider.id}`}
-                            width={50}
-                            height={50}
-                            style={{ width: 'auto', height: 'auto' }}
-                            unoptimized
+                            width={36}
+                            height={36}
+                            loading="lazy"
+                            sizes="36px"
+                            className="object-contain"
                         />
                     </div>
                 </div>
@@ -67,4 +64,4 @@ export default function Product({ product }: ItemProductProps){
         </div>
     </>
     )
-}
+};

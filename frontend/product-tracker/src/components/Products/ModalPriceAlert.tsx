@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react"
 import Alert from "../Alert";
 import { ErrorAlertMap } from "@/src/types/alert";
 import { AlertDirection, createPriceAlert } from "@/src/services/auth";
+import { NumberFormatValues, NumericFormat } from "react-number-format";
 
 type ModalPriceAlertProps = {
     provider: Provider | null;
@@ -131,32 +132,10 @@ export default function ModalPriceAlert ({
         })
     }
 
-    const handleChangePrice = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.currentTarget.value;
-
-        // Permitir numeros y un punto decimal
-        if (!/^\d*\.?\d*$/.test(value)) {
-            return;
-        }
-
-        if (value === ''){
-            setFormData(prev => ({
-                ...prev,
-                price_target: ''
-            }));
-
-            return
-        }
-
-        const numericValue = Number(value);
-
-        if (!Number.isFinite(numericValue) || numericValue < 0) {
-            return;
-        }
-
+    const handleChangePrice = (value: NumberFormatValues) => {
         setFormData(prev => ({
             ...prev,
-            price_target: value
+            price_target: value.value
         }));
     }
 
@@ -342,14 +321,15 @@ export default function ModalPriceAlert ({
                                 >
                                     Precio objetivo ({currency})
                                 </label> 
-                                <input
+                                <NumericFormat
                                     className="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                                    id="targetPrice"
-                                    name="targetPrice" 
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={formData.price_target}
-                                    onChange={(e) => handleChangePrice(e)}
+                                    thousandSeparator=","
+                                    decimalSeparator="."
+                                    decimalScale={2}
+                                    fixedDecimalScale={false}
+                                    placeholder="0.00"
+                                    value={String(formData.price_target)}
+                                    onValueChange={(value) => handleChangePrice(value)}
                                 />
                             </div>
                         </div>

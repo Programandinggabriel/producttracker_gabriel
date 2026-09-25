@@ -46,17 +46,23 @@ const getProviderToken = async (name) => {
     return rows[0]
 }
 
-const getProviders = async () => {
-    const query = `SELECT name,
-                          token,
-                          logo,
-                          nickname
-                    FROM providers 
-                   WHERE active = true`;
-    
-    const { rows, rowCount } = await pool.query(query);
-    let providers; 
+const getProviders = async (ids) => {
+    let query = `SELECT name,
+                        token,
+                        logo,
+                        nickname
+                  FROM providers 
+                 WHERE active = true`;
+    const values = [];
 
+    if(ids){
+        query+= ' AND name = ANY($1)'
+        values.push(ids)
+    }
+    
+    const { rows, rowCount } = await pool.query(query, values);
+    
+    let providers;
     providers = rows.map((item) => {
         return addExtraData(item)
     })

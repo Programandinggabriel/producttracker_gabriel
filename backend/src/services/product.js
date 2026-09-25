@@ -155,6 +155,17 @@ const getQueryProducts = async (
         }
 
         provider_filter = provider_filter.slice(1, -1).split(', ');
+
+        for (const provider of provider_filter){
+            const exists = await dbProvider.getProvider(provider)
+            if(exists.rowCount === 0){
+                throw new ThrowError(
+                    `Provider ${provider} not exists`,
+                    404,
+                    'PROVIDER_NOT_FOUND'
+                )
+            }
+        }
     }
 
     const regexOnlyNumbers = /^\d+(\.\d{1,2})?$/;
@@ -179,6 +190,7 @@ const getQueryProducts = async (
         normalizeQuery,
         limit + 1,
         offset,
+        provider_filter,
         min_price_filter,
         max_price_filter
     );
@@ -279,6 +291,17 @@ const getProductsByCategory = async (
         }
 
         provider_filter = provider_filter.slice(1, -1).split(', ');
+
+        for (const provider of provider_filter){
+            const exists = await dbProvider.getProvider(provider)
+            if(exists.rowCount === 0){
+                throw new ThrowError(
+                    `Provider ${provider} not exists`,
+                    404,
+                    'PROVIDER_NOT_FOUND'
+                )
+            }
+        }
     }
 
     const regexOnlyNumbers = /^\d+(\.\d{1,2})?$/;

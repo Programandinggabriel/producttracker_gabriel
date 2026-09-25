@@ -77,7 +77,10 @@ const getQueryProducts = async (
     min_price_filter,
     max_price_filter
 ) => {
-    const providers = await dbProvider.getProviders();
+    const providers = provider_filter 
+        ? await dbProvider.getProviders(provider_filter)
+        : await dbProvider.getProviders();
+    
     const providerPromises = providers.map(
         (provider) => {
             const products = getCachedProductsByBlocks({
@@ -134,14 +137,7 @@ const getQueryProducts = async (
         })
     )
 
-    let filtered = previewData;
-    if(provider_filter){
-        filtered = previewData.filter((product) => {
-            return provider_filter.includes(product.provider.id)
-        })
-    }
-
-    return filtered
+    return previewData;
 }
 
 
@@ -153,7 +149,10 @@ const getProductsByCategory = async (
     min_price_filter,
     max_price_filter
 ) => {
-    const providers = await dbProvider.getProviders();
+    const providers = provider_filter 
+        ? await dbProvider.getProviders(provider_filter)
+        : await dbProvider.getProviders();
+    
     const providerPromises = providers.map(
         async(provider) => {
             const providerCategory = await dbCategory.getCategoryProvider(idCat, provider.name);
@@ -240,14 +239,7 @@ const getProductsByCategory = async (
         })
     )
 
-    let filtered = previewData;
-    if(provider_filter){
-        filtered = previewData.filter((product) => {
-            return provider_filter.includes(product.provider.id)
-        })
-    }
-
-    return filtered;
+    return previewData;
 }
 
 
